@@ -100,5 +100,12 @@ header change? Message the owner instead of editing their file.
 
 ## Deploy
 
-Push to `main` -> `.github/workflows/deploy.yml` publishes to GitHub Pages.
+GitHub Pages publishes straight from the `main` branch (legacy branch source,
+root folder). Every push to `main` rebuilds the site:
+https://junlinpeng.github.io/wetalk/
+
+`.nojekyll` is committed so Pages serves the files verbatim (no Jekyll pass).
+An Actions-based deploy can be added later by someone whose GitHub token has
+the `workflow` scope.
+
 Local preview: `python -m http.server 8080` from the repo root.

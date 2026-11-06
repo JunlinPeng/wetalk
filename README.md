@@ -14,8 +14,8 @@ python -m http.server 8080
 # open http://localhost:8080/
 ```
 
-No build step: the site is plain HTML/CSS/JS and is deployed straight to
-GitHub Pages by `.github/workflows/deploy.yml`.
+No build step: the site is plain HTML/CSS/JS. GitHub Pages publishes the
+`main` branch automatically on every push.
 
 ## Accounts & data
 
