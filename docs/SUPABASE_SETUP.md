@@ -127,8 +127,9 @@ localhost development and the deployed site both work without code changes.
    depending on dashboard version).
 2. Copy:
    - **Project URL** (looks like `https://abcdefghijklmnop.supabase.co`)
-   - **anon** / **public** API key (the short public key, sometimes labelled
-     `anon public`)
+   - **anon** / **public** API key, or the newer **Publishable key**
+     (`sb_publishable_...`). Both are public and safe to commit. Copy the bare
+     **project URL** (strip any trailing `/rest/v1/`).
 3. Edit `js/config.js`:
 
        window.WETALK_CONFIG = {

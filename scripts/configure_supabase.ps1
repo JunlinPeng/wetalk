@@ -24,9 +24,16 @@ $root = Split-Path -Parent $PSScriptRoot
 $configPath = Join-Path $root "js/config.js"
 
 if (-not (Test-Path $configPath)) { throw "Cannot find js/config.js at $configPath" }
-if ($SupabaseUrl -notmatch "^https://[a-z0-9-]+\.supabase\.co$") { throw "SupabaseUrl must look like https://abcdefgh.supabase.co" }
+
+# Accept the copy-pasted "Project URL" even when it includes /rest/v1/ or a
+# trailing slash - the app needs the bare project origin.
+$SupabaseUrl = $SupabaseUrl.Trim().TrimEnd("/")
+$SupabaseUrl = $SupabaseUrl -replace "/rest/v1$", ""
+$SupabaseUrl = $SupabaseUrl.TrimEnd("/")
+if ($SupabaseUrl -notmatch "^https://[a-z0-9-]+\.supabase\.co$") { throw "SupabaseUrl must look like https://abcdefgh.supabase.co (got: $SupabaseUrl)" }
 if ($AnonKey.Length -lt 40) { throw "That anon key looks too short - copy the full anon public key from Supabase Project Settings > API." }
-if ($AnonKey.StartsWith("sbp_")) { throw "That is a Supabase personal access token, not the anon key. Use the public anon key." }
+if ($AnonKey.StartsWith("sbp_")) { throw "That is a Supabase personal access token, not the anon key. Use the public anon/publishable key." }
+if ($AnonKey -notmatch "^sb_publishable_[A-Za-z0-9_\-]+$" -and $AnonKey.Length -lt 60) { throw "That does not look like a Supabase anon or publishable key. Copy the public key from Project Settings > API." }
 
 $text = Get-Content -Raw -Encoding UTF8 $configPath
 $text = $text -replace '(?m)^(\s*supabaseUrl:\s*")[^"]*(")', ('${1}' + $SupabaseUrl + '${2}')
