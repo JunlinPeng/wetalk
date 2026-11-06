@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your speech — Wetalk</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="shell__bar">
+      <div class="brand">
+        <span class="brand__mark">W</span>
+        <span class="brand__name">Wetalk</span>
+      </div>
+      <button class="btn btn--ghost" onclick="location.href='topic.html'">← Back</button>
+    </header>
+
+    <main class="page">
+      <div class="card entry-card">
+        <h1 class="step-heading">Your speech</h1>
+        <p class="tagline" style="text-align:left;margin-top:2px">Here's what we're working with.</p>
+
+        <div class="field">
+          <label>Topic</label>
+          <div class="input" style="cursor:default;white-space:pre-wrap" id="draftTopic"></div>
+        </div>
+        <div class="field">
+          <label>Writing mode</label>
+          <div class="input" style="cursor:default" id="draftMode"></div>
+        </div>
+
+        <!-- API insert box (shown when this account has no key yet) -->
+        <div class="api-panel" id="apiPanel" style="display:none">
+          <h2 class="api-panel__title">Connect your AI</h2>
+          <p class="api-panel__desc">Bring your own API key and pick any provider. Your key is stored locally and is only sent to the provider you select.</p>
+
+          <div class="field">
+            <label for="provider">Provider</label>
+            <select class="input" id="provider"></select>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="baseUrl">Base URL</label>
+              <input class="input" id="baseUrl" placeholder="https://api.example.com/v1" />
+            </div>
+            <div class="field">
+              <label for="model">Model</label>
+              <input class="input" id="model" placeholder="model-name" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="apiKey">API key</label>
+            <div class="password-row">
+              <input class="input" id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+              <button type="button" class="password-toggle" id="keyToggle">Show</button>
+            </div>
+            <div class="hint">Stored only on this device. Not shared anywhere else.</div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn--secondary" id="testBtn">Test connection</button>
+            <button class="btn btn--primary" id="saveBtn">Save &amp; continue</button>
+          </div>
+        </div>
+
+        <!-- Work view (shown after the key is saved) -->
+        <div id="workView" style="display:none">
+          <div class="config-summary">
+            <span class="config-summary__text" id="configSummary"></span>
+            <button class="btn btn--ghost" id="changeApiBtn">Change API</button>
+          </div>
+
+          <div id="aiView" style="display:none;margin-top:18px">
+            <button class="btn btn--primary" id="genBtn">Generate my speech</button>
+            <div class="output-area output-area--empty" id="output" style="margin-top:14px">Your AI-written speech will appear here.</div>
+            <button class="btn btn--primary" id="continueBtn" style="margin-top:14px;display:none">Continue to schedule</button>
+          </div>
+
+          <div id="manualView" style="display:none;margin-top:18px">
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:7px">Write your speech</label>
+            <textarea class="input input--area" id="manualText" placeholder="Start writing your speech here…"></textarea>
+            <button class="btn btn--primary" id="saveManualBtn" style="margin-top:14px">Save &amp; continue</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/llm.js"></script>
+  <script src="js/works.js"></script>
+  <script>
+    if (!WetalkAuth.requireAuth()) { /* redirected */ }
+
+    function getDraft() {
+      try { return JSON.parse(localStorage.getItem("wetalk.topicDraft") || "null") || {}; }
+      catch (e) { return {}; }
+    }
+
+    function toast(m) { if (WetalkAuth.toast) WetalkAuth.toast(m); }
+
+    var draft = getDraft();
+    document.getElementById("draftTopic").textContent = draft.topic || "(no topic entered)";
+    document.getElementById("draftMode").textContent = (draft.mode === "manual") ? "I'll write it myself" : "Use AI to write my speech";
+
+    // ---- populate provider list ----
+    var sel = document.getElementById("provider");
+    WetalkLLM.getProviders().forEach(function (p) {
+      var o = document.createElement("option");
+      o.value = p.id;
+      o.textContent = p.name;
+      sel.appendChild(o);
+    });
+    sel.value = "openai";
+
+    function applyProvider(id) {
+      var p = WetalkLLM.findProvider(id);
+      if (!p) return;
+      document.getElementById("baseUrl").value = p.baseUrl || "";
+      document.getElementById("model").value = p.model || "";
+    }
+    sel.onchange = function () { applyProvider(sel.value); };
+    applyProvider("openai");
+
+    // ---- show/hide API panel vs work view ----
+    function refresh() {
+      var has = WetalkLLM.hasConfig();
+      document.getElementById("apiPanel").style.display = has ? "none" : "";
+      document.getElementById("workView").style.display = has ? "" : "none";
+      if (has) {
+        var c = WetalkLLM.getConfig();
+        var p = WetalkLLM.findProvider(c.provider);
+        document.getElementById("configSummary").innerHTML =
+          "Connected: <b>" + (p ? p.name : (c.provider || "Custom")) + "</b> · " + (c.model || "");
+        document.getElementById("aiView").style.display = (draft.mode === "manual") ? "none" : "";
+        document.getElementById("manualView").style.display = (draft.mode === "manual") ? "" : "none";
+      }
+    }
+
+    function readForm() {
+      return {
+        provider: document.getElementById("provider").value,
+        baseUrl: document.getElementById("baseUrl").value.trim(),
+        model: document.getElementById("model").value.trim(),
+        apiKey: document.getElementById("apiKey").value.trim()
+      };
+    }
+
+    function validateForm(cfg) {
+      if (!cfg.apiKey) return "Enter your API key.";
+      if (!cfg.baseUrl) return "Enter a base URL.";
+      if (!cfg.model) return "Enter a model name.";
+      return null;
+    }
+
+    // ---- test connection ----
+    document.getElementById("testBtn").onclick = function () {
+      var cfg = readForm();
+      var err = validateForm(cfg);
+      if (err) { toast(err); return; }
+      WetalkLLM.saveConfig(cfg);
+      var btn = document.getElementById("testBtn");
+      btn.disabled = true; btn.textContent = "Testing…";
+      WetalkLLM.testConnection().then(function () {
+        toast("Connection OK — your provider responded.");
+        btn.disabled = false; btn.textContent = "Test connection";
+      }).catch(function (e) {
+        toast("Test failed: " + e.message);
+        btn.disabled = false; btn.textContent = "Test connection";
+      });
+    };
+
+    // ---- save ----
+    document.getElementById("saveBtn").onclick = function () {
+      var cfg = readForm();
+      var err = validateForm(cfg);
+      if (err) { toast(err); return; }
+      WetalkLLM.saveConfig(cfg);
+      refresh();
+      toast("API saved.");
+    };
+
+    document.getElementById("changeApiBtn").onclick = function () {
+      var c = WetalkLLM.getConfig();
+      if (c) {
+        document.getElementById("provider").value = c.provider || "custom";
+        document.getElementById("baseUrl").value = c.baseUrl || "";
+        document.getElementById("model").value = c.model || "";
+        document.getElementById("apiKey").value = c.apiKey || "";
+      }
+      document.getElementById("apiPanel").style.display = "";
+      document.getElementById("workView").style.display = "none";
+    };
+
+    // ---- show/hide key ----
+    document.getElementById("keyToggle").onclick = function () {
+      var input = document.getElementById("apiKey");
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      document.getElementById("keyToggle").textContent = show ? "Hide" : "Show";
+    };
+
+    // ---- AI generate ----
+    document.getElementById("genBtn").onclick = function () {
+      var btn = document.getElementById("genBtn");
+      var out = document.getElementById("output");
+      btn.disabled = true; btn.textContent = "Generating…";
+      out.className = "output-area"; out.textContent = "";
+
+      var messages = [
+        { role: "system", content: "You are an expert speechwriting coach for a high school student. Write a complete, natural speech that sounds good spoken aloud — conversational, not like an essay. Return ONLY the speech text, with no headings, labels, or commentary." },
+        { role: "user", content: "Topic: " + (draft.topic || "") + "\n\nWrite a 3-5 minute speech (around 300-450 words) with a clear opening hook, a thesis, 2-3 body points with examples, and a memorable conclusion." }
+      ];
+
+      WetalkLLM.chat(messages).then(function (text) {
+        out.textContent = text;
+        out.className = "output-area";
+        try { localStorage.setItem("wetalk.speechDraft", text); } catch (e) {}
+        try { WetalkWorks.archive(); } catch (e) {}
+        document.getElementById("continueBtn").style.display = "";
+        btn.textContent = "Regenerate";
+      }).catch(function (err) {
+        out.className = "output-area output-area--empty";
+        out.textContent = "Generation failed: " + err.message +
+          "\n\nIf this is a browser/CORS error, your provider may not allow direct browser requests. Try a CORS-enabled provider (OpenRouter, Ollama, LM Studio) or use a backend proxy.";
+        btn.textContent = "Try again";
+      }).then(function () { btn.disabled = false; });
+    };
+
+    document.getElementById("continueBtn").onclick = function () {
+      location.href = "schedule.html";
+    };
+
+    // ---- manual save ----
+    document.getElementById("saveManualBtn").onclick = function () {
+      var text = document.getElementById("manualText").value;
+      if (!text.trim()) { toast("Write your speech first."); return; }
+      try { localStorage.setItem("wetalk.speechDraft", text); } catch (e) {}
+      try { WetalkWorks.archive(); } catch (e) {}
+      location.href = "schedule.html";
+    };
+
+    function restoreSpeech() {
+      try {
+        var s = localStorage.getItem("wetalk.speechDraft") || "";
+        if (s) {
+          if (draft.mode === "manual") {
+            document.getElementById("manualText").value = s;
+          } else {
+            var out = document.getElementById("output");
+            out.textContent = s;
+            out.className = "output-area";
+            document.getElementById("continueBtn").style.display = "";
+          }
+        }
+      } catch (e) {}
+    }
+
+    WetalkLLM.importLegacyConfig().then(function () { refresh(); restoreSpeech(); });
+  </script>
+</body>
+</html>

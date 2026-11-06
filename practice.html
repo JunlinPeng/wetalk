@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Practice — Wetalk</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="shell__bar">
+      <div class="brand">
+        <span class="brand__mark">W</span>
+        <span class="brand__name">Wetalk</span>
+      </div>
+      <button class="btn btn--ghost" onclick="location.href='schedule.html'">← Back</button>
+    </header>
+
+    <main class="page">
+      <div class="card entry-card">
+        <!-- Stage 1: setup -->
+        <section id="stage-setup">
+          <h1 class="step-heading">Practice today's task</h1>
+          <p class="tagline" style="text-align:left;margin-top:2px">Speak this part aloud, then get AI feedback.</p>
+          <div class="field">
+            <label>Today's segment</label>
+            <div class="input" id="segmentSummary" style="cursor:default;white-space:pre-wrap;line-height:1.6"></div>
+          </div>
+          <button class="btn btn--primary" id="startBtn">Start practice</button>
+        </section>
+
+        <!-- Stage 2: practice -->
+        <section id="stage-record" style="display:none">
+          <div class="record-status" style="justify-content:center">
+            <span class="timer-display" id="timer" style="font-size:44px">0:00</span>
+          </div>
+          <p class="tagline" style="text-align:center;margin:4px 0 16px">Deliver your segment aloud, then tell us what you said.</p>
+
+          <div class="field">
+            <label for="spokenText">What did you actually say?</label>
+            <textarea class="input input--area" id="spokenText" placeholder="Type or paste what you said — the AI will coach you on it."></textarea>
+          </div>
+          <button class="btn btn--secondary" id="useScriptBtn">Use my script instead</button>
+
+          <button class="btn btn--primary" id="finishBtn" style="margin-top:18px">Finish &amp; get feedback</button>
+        </section>
+
+        <!-- Stage 3: evaluating -->
+        <section id="stage-evaluating" style="display:none" class="impromptu__stage">
+          <div class="spinner"></div>
+          <p class="phase-label">Evaluating your speech…</p>
+        </section>
+
+        <!-- Stage 4: results -->
+        <section id="stage-results" style="display:none">
+          <h1 class="step-heading">Your feedback</h1>
+          <p class="tagline" style="text-align:left;margin-top:2px">Organization · Analysis · Delivery · Creativity</p>
+          <div id="aiScores" style="margin-top:16px"></div>
+          <div class="tips">
+            <h3>What to fix next</h3>
+            <p class="criteria__fb" id="overallFeedback" style="margin:0 0 12px"></p>
+            <p class="criteria__fb" id="paceInfo" style="margin:0 0 12px"></p>
+            <ul id="tipList"></ul>
+          </div>
+          <div class="btn-row" style="margin-top:20px">
+            <button class="btn btn--secondary" id="backBtn">Back to schedule</button>
+            <button class="btn btn--primary" id="againBtn">Practice again</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/llm.js"></script>
+  <script src="js/planner.js"></script>
+  <script src="js/practice.js"></script>
+  <script>
+    if (!WetalkAuth.requireAuth()) { /* redirected */ }
+
+    window.addEventListener("error", function (e) {
+      if (WetalkAuth && WetalkAuth.toast) WetalkAuth.toast("Error: " + (e.message || "unknown"));
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      var m = e.reason && e.reason.message ? e.reason.message : String(e.reason);
+      if (WetalkAuth && WetalkAuth.toast) WetalkAuth.toast("Error: " + m);
+    });
+
+    WetalkLLM.importLegacyConfig();
+    WetalkPractice.init();
+  </script>
+</body>
+</html>

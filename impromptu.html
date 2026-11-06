@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Impromptu Speech — Wetalk</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="shell__bar">
+      <div class="brand">
+        <span class="brand__mark">W</span>
+        <span class="brand__name">Wetalk</span>
+      </div>
+      <button class="btn btn--ghost" onclick="location.href='app.html'">← Home</button>
+    </header>
+
+    <main class="impromptu">
+      <!-- Stage 1: draw topics -->
+      <section id="stage-draw" class="impromptu__stage">
+        <div class="home__heading">
+          <h1>Impromptu Speech</h1>
+          <p>No topic? Draw three NSDA-style prompts, choose one, and speak.</p>
+        </div>
+        <button class="btn btn--primary" id="drawBtn" style="max-width:280px">Draw 3 topics</button>
+        <div id="topicCards" class="topic-cards" style="display:none"></div>
+      </section>
+
+      <!-- Stage 2: the round (timer + recording) -->
+      <section id="stage-round" class="impromptu__stage" style="display:none">
+        <div class="round-topic">
+          <span class="topic-card__cat" id="chosenTopicCat"></span>
+          <p id="chosenTopic"></p>
+        </div>
+        <div class="timer-display" id="timerDisplay">7:00</div>
+        <div class="phase-label" id="phaseLabel">Preparation</div>
+        <div class="round-controls">
+          <button class="btn btn--primary" id="btnStartPrep">Start Prep</button>
+          <button class="btn btn--primary" id="btnStartSpeaking" style="display:none">Start Speaking</button>
+          <button class="btn btn--secondary" id="btnStop" style="display:none">Stop</button>
+        </div>
+      </section>
+
+      <!-- Stage 3: transcribing & evaluating -->
+      <section id="stage-evaluating" class="impromptu__stage" style="display:none">
+        <div class="spinner"></div>
+        <p class="phase-label">Transcribing &amp; evaluating…</p>
+      </section>
+
+      <!-- Stage 4: results -->
+      <section id="stage-results" class="impromptu__stage" style="display:none">
+        <div class="results-card">
+          <h2 style="margin-top:0">Your evaluation</h2>
+          <div class="overall">
+            <span class="overall__label">Overall</span>
+            <span class="overall__score" id="overallScore">—</span>
+            <div class="overall__bar"><span id="overallBar" style="width:0%"></span></div>
+          </div>
+          <p class="result-meta" id="resultMeta"></p>
+          <div id="criteriaList"></div>
+          <div class="tips">
+            <h3>Coach's tips</h3>
+            <ul id="tipsList"></ul>
+          </div>
+          <div class="btn-row" style="margin-top:24px">
+            <button class="btn btn--primary" id="btnAgain">Practice again</button>
+            <button class="btn btn--secondary" id="btnHome">Back to Home</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/topics.js"></script>
+  <script src="js/impromptu.js"></script>
+  <script>
+    if (!WetalkAuth.requireAuth()) { /* redirected */ }
+    WetalkImpromptu.init();
+  </script>
+</body>
+</html>

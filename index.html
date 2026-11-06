@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wetalk — Say it naturally</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <div class="card">
+      <div class="wordmark">
+        <div class="brand">
+          <span class="brand__mark">W</span>
+          <span class="brand__name">Wetalk</span>
+        </div>
+      </div>
+      <p class="tagline">Prepare, practice and speak with confidence.</p>
+
+      <div class="btn-row">
+        <button class="btn btn--primary" onclick="location.href='signup.html'">Sign Up</button>
+        <button class="btn btn--secondary" onclick="location.href='signin.html'">Sign In</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+    // If already signed in, go straight into the app.
+    if (WetalkAuth && WetalkAuth.getSession && WetalkAuth.getSession()) {
+      location.replace("works.html");
+    }
+  </script>
+</body>
+</html>

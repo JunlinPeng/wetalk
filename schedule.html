@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schedule — Wetalk</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="shell__bar">
+      <div class="brand">
+        <span class="brand__mark">W</span>
+        <span class="brand__name">Wetalk</span>
+      </div>
+      <div class="shell__user">
+        <button class="btn btn--ghost" onclick="location.href='script.html'">← Back</button>
+        <button class="btn btn--primary" id="pptBtn" style="width:auto;padding:9px 16px">Generate PowerPoint</button>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="card entry-card">
+        <h1 class="step-heading">Your practice schedule</h1>
+        <p class="tagline" style="text-align:left;margin-top:2px">Tell us when you present, and we'll build a day-by-day plan.</p>
+
+        <div class="field">
+          <label>Your speech</label>
+          <div class="input" style="cursor:default" id="speechSummary"></div>
+        </div>
+
+        <div id="noProvider" class="api-panel" style="display:none">
+          <h2 class="api-panel__title">Connect an AI provider first</h2>
+          <p class="api-panel__desc">The schedule and PowerPoint are generated with your AI. <a href="script.html">Connect a provider →</a></p>
+        </div>
+
+        <span class="choice-label">When do you present?</span>
+        <div class="field-row">
+          <div class="field">
+            <label for="dateInput">Date</label>
+            <input class="input" id="dateInput" type="date" />
+          </div>
+          <div class="field">
+            <label for="timeInput">Time</label>
+            <input class="input" id="timeInput" type="time" value="09:00" />
+          </div>
+        </div>
+        <div class="hint" id="deadlineHint"></div>
+
+        <button class="btn btn--primary" id="genScheduleBtn">Generate my schedule</button>
+
+        <div id="scheduleResult" style="display:none;margin-top:20px">
+          <div class="config-summary" style="margin-bottom:14px">
+            <span class="config-summary__text" id="scheduleMeta"></span>
+          </div>
+          <div id="scheduleList"></div>
+        </div>
+
+        <button class="btn btn--primary" id="finishTodayBtn" style="margin-top:24px;display:none" onclick="location.href='checkin.html'">Finish today's task →</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- PPT modal -->
+  <div class="ppt-modal" id="pptModal" style="display:none">
+    <div class="ppt-modal__card">
+      <div class="ppt-modal__head">
+        <h2 id="pptTitle" style="margin:0">PowerPoint outline</h2>
+        <button class="btn btn--ghost" id="pptClose">✕</button>
+      </div>
+      <p class="tagline" id="pptStatus" style="text-align:left;margin:6px 0 16px">Generating…</p>
+      <div id="pptBody" class="ppt-body"></div>
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn--secondary" id="pptClose2">Close</button>
+        <button class="btn btn--primary" id="pptExport">Export PowerPoint (.pptx)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/llm.js"></script>
+  <script src="js/planner.js"></script>
+  <script src="js/works.js"></script>
+  <script src="js/jszip.min.js"></script>
+  <script src="js/pptxgen.min.js"></script>
+  <script>
+    if (!WetalkAuth.requireAuth()) { /* redirected */ }
+
+    var title = "";
+    var speech = "";
+    try { var d = JSON.parse(localStorage.getItem("wetalk.topicDraft") || "null") || {}; title = d.topic || ""; } catch (e) {}
+    try { speech = localStorage.getItem("wetalk.speechDraft") || ""; } catch (e) {}
+
+    var words = speech.trim() ? speech.trim().split(/\s+/).length : 0;
+    document.getElementById("speechSummary").textContent =
+      (title ? "\"" + title + "\" · " : "") + (words ? words + " words" : "no speech yet");
+
+    // default date = tomorrow
+    var tomorrow = new Date(Date.now() + 86400000);
+    var iso = tomorrow.getFullYear() + "-" + String(tomorrow.getMonth() + 1).padStart(2, "0") + "-" + String(tomorrow.getDate()).padStart(2, "0");
+    document.getElementById("dateInput").value = iso;
+
+    // Restore a previously generated schedule (so "Back to schedule" keeps it).
+    try {
+      var saved = JSON.parse(localStorage.getItem("wetalk.schedule") || "null");
+      if (saved && saved.days && saved.days.length) {
+        renderSchedule({ daily_plan: saved.days });
+      }
+    } catch (e) {}
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function setHint(id, msg, isError) {
+      var el = document.getElementById(id);
+      el.textContent = msg || "";
+      el.className = isError ? "hint hint--error" : "hint";
+    }
+
+    function toast(m) { if (WetalkAuth.toast) WetalkAuth.toast(m); }
+
+    function daysUntil() {
+      var dateVal = document.getElementById("dateInput").value;
+      var timeVal = document.getElementById("timeInput").value || "23:59";
+      if (!dateVal) return null;
+      var target = new Date(dateVal + "T" + timeVal);
+      var now = new Date();
+      return Math.ceil((target - now) / 86400000);
+    }
+
+    // ---------- schedule ----------
+    document.getElementById("genScheduleBtn").onclick = function () {
+      if (!speech.trim()) { setHint("deadlineHint", "You need a speech first — go back and write or generate one.", true); return; }
+      if (!WetalkLLM.hasConfig()) {
+        document.getElementById("noProvider").style.display = "";
+        setHint("deadlineHint", "", false);
+        return;
+      }
+      var days = daysUntil();
+      if (days === null) { setHint("deadlineHint", "Choose a date.", true); return; }
+      if (days < 1) { setHint("deadlineHint", "Choose a future date and time.", true); return; }
+
+      setHint("deadlineHint", "", false);
+      var btn = document.getElementById("genScheduleBtn");
+      btn.disabled = true; btn.textContent = "Generating…";
+
+      WetalkPlanner.generateSchedule(title, speech, days).then(function (plan) {
+        btn.disabled = false; btn.textContent = "Regenerate schedule";
+        renderSchedule(plan);
+      }).catch(function (e) {
+        btn.disabled = false; btn.textContent = "Generate my schedule";
+        setHint("deadlineHint", "Failed: " + e.message, true);
+      });
+    };
+
+    function renderSchedule(plan) {
+      var list = document.getElementById("scheduleList");
+      list.innerHTML = "";
+      var days = plan.daily_plan || [];
+      days.forEach(function (d) {
+        var card = document.createElement("div");
+        card.className = "day-card";
+        var tasks = (d.tasks || []).map(function (t) { return "<li>" + escapeHtml(t) + "</li>"; }).join("");
+        card.innerHTML =
+          '<div class="day-card__head">' +
+            '<span class="day-card__num">Day ' + (d.day_number || "") + '</span>' +
+            '<span class="day-card__focus">' + escapeHtml(d.focus_area || "") + '</span>' +
+            '<span class="day-card__mins">' + (d.estimated_minutes || 30) + ' min</span>' +
+          '</div>' +
+          '<p class="day-card__segment">' + escapeHtml(d.script_segment || "") + '</p>' +
+          '<ul class="day-card__tasks">' + tasks + '</ul>';
+        list.appendChild(card);
+      });
+      document.getElementById("scheduleMeta").innerHTML =
+        "<b>" + days.length + " days</b> to prepare";
+      document.getElementById("scheduleResult").style.display = "";
+      document.getElementById("finishTodayBtn").style.display = "";
+      try { localStorage.setItem("wetalk.schedule", JSON.stringify({ title: title, days: days })); } catch (e) {}
+      try { WetalkWorks.archive(); } catch (e) {}
+    }
+
+    // ---------- PowerPoint ----------
+    var pptOpen = false;
+    function openPPT() {
+      pptOpen = true;
+      document.getElementById("pptModal").style.display = "";
+      document.getElementById("pptBody").innerHTML = "";
+      document.getElementById("pptStatus").textContent = "Generating…";
+      if (!speech.trim()) {
+        document.getElementById("pptStatus").textContent = "You need a speech first.";
+        return;
+      }
+      if (!WetalkLLM.hasConfig()) {
+        document.getElementById("pptStatus").textContent = "Connect an AI provider first (go back to the speech page).";
+        return;
+      }
+      WetalkPlanner.generatePPT(title, speech).then(function (outline) {
+        window._pptOutline = outline;
+        document.getElementById("pptTitle").textContent = outline.outline_title || "PowerPoint outline";
+        document.getElementById("pptStatus").textContent = "Done — here's your outline.";
+        renderPPT(outline);
+      }).catch(function (e) {
+        document.getElementById("pptStatus").textContent = "Failed: " + e.message;
+      });
+    }
+
+    function renderPPT(outline) {
+      var body = document.getElementById("pptBody");
+      var html = "";
+      if (outline.thesis) html += '<p class="ppt__thesis">' + escapeHtml(outline.thesis) + '</p>';
+      (outline.sections || []).forEach(function (s) {
+        html += '<div class="ppt__slide">' +
+          '<div class="ppt__heading">' + escapeHtml(s.slide_heading || "") + '</div>' +
+          '<ul class="ppt__bullets">';
+        (s.bullet_points || []).forEach(function (b) { html += '<li>' + escapeHtml(b) + '</li>'; });
+        html += '</ul></div>';
+      });
+      body.innerHTML = html;
+    }
+
+    // App theme (5-color palette) applied to every generated deck
+    var THEME = { navy900: "021024", navy700: "052659", blue500: "5483B3", blue300: "7DA0CA", ice100: "C1E8FF" };
+
+    function buildPptx(o) {
+      var pptx = new PptxGenJS();
+      pptx.defineLayout({ name: "W", width: 10, height: 5.625 });
+      pptx.layout = "W";
+
+      // Title slide
+      var titleSlide = pptx.addSlide();
+      titleSlide.background = { color: THEME.navy900 };
+      titleSlide.addShape("rect", { x: 0, y: 5.05, w: 10, h: 0.13, fill: { color: THEME.blue500 } });
+      titleSlide.addText(o.outline_title || title || "Presentation", {
+        x: 0.8, y: 1.7, w: 8.4, h: 1.5, fontSize: 40, bold: true,
+        color: THEME.ice100, align: "center", valign: "middle"
+      });
+      if (o.thesis) {
+        titleSlide.addText(o.thesis, {
+          x: 0.8, y: 3.3, w: 8.4, h: 1.0, fontSize: 18, color: THEME.blue300, align: "center"
+        });
+      }
+      titleSlide.addText("Wetalk", {
+        x: 0.8, y: 4.4, w: 8.4, h: 0.4, fontSize: 12, color: THEME.blue500, align: "center"
+      });
+
+      // Content slides (one per outline section)
+      var sections = (o.sections && o.sections.length) ? o.sections : [{ slide_heading: "Presentation", bullet_points: [] }];
+      sections.forEach(function (s) {
+        var slide = pptx.addSlide();
+        slide.background = { color: THEME.navy900 };
+        slide.addShape("rect", { x: 0, y: 0, w: 0.16, h: 5.625, fill: { color: THEME.blue500 } });
+        slide.addText(s.slide_heading || "", {
+          x: 0.7, y: 0.55, w: 8.7, h: 0.9, fontSize: 28, bold: true,
+          color: THEME.ice100, valign: "middle"
+        });
+        var bullets = (s.bullet_points || []).map(function (b) {
+          return { text: b, options: { bullet: true, color: THEME.blue300, fontSize: 18, paraSpaceAfter: 12 } };
+        });
+        if (bullets.length) {
+          slide.addText(bullets, { x: 0.75, y: 1.7, w: 8.5, h: 3.5, valign: "top" });
+        }
+      });
+
+      return pptx;
+    }
+
+    function exportPPT() {
+      var o = window._pptOutline;
+      if (!o) return;
+      if (typeof PptxGenJS === "undefined") { toast("PowerPoint library not loaded."); return; }
+      var name = (o.outline_title || title || "presentation").replace(/[\\/:*?"<>|]+/g, "");
+      buildPptx(o).writeFile({ fileName: name + ".pptx" });
+    }
+
+    function closePPT() {
+      pptOpen = false;
+      document.getElementById("pptModal").style.display = "none";
+    }
+
+    document.getElementById("pptBtn").onclick = openPPT;
+    document.getElementById("pptClose").onclick = closePPT;
+    document.getElementById("pptClose2").onclick = closePPT;
+    document.getElementById("pptExport").onclick = exportPPT;
+    document.getElementById("pptModal").addEventListener("click", function (e) {
+      if (e.target === this) closePPT();
+    });
+  </script>
+</body>
+</html>

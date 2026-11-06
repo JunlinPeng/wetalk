@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign Up — Wetalk</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <div class="card card--wide">
+      <div class="wordmark">
+        <div class="brand">
+          <span class="brand__mark">W</span>
+          <span class="brand__name">Wetalk</span>
+        </div>
+      </div>
+      <h1 class="step-heading" style="text-align:center">Create your account</h1>
+      <p class="tagline">One click, or a few quick details — your call.</p>
+
+      <!-- One-click providers -->
+      <button class="btn btn--oauth" onclick="WetalkAuth.oauthSignIn('google')">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <button class="btn btn--oauth" style="margin-top:10px" onclick="WetalkAuth.oauthSignIn('github')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+        Continue with GitHub
+      </button>
+
+      <div class="divider">or use email or phone</div>
+
+      <!-- Step indicator -->
+      <div class="steps" id="steps">
+        <span class="is-active"></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <!-- Step 1 -->
+      <div id="step1">
+        <p class="step-sub" style="text-align:center">How can we identify you?</p>
+        <div class="segmented" id="modeToggle">
+          <button type="button" class="is-active" data-mode="email">Email</button>
+          <button type="button" data-mode="phone">Phone</button>
+        </div>
+        <div class="field">
+          <input class="input" id="identifier" type="text" placeholder="you@example.com" autocomplete="email" />
+          <div class="hint" id="step1Hint">No verification code needed — we skip the SMS check.</div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--primary" onclick="nextStep1()">Next</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="step2" style="display:none">
+        <p class="step-sub" style="text-align:center">Pick a username people will see.</p>
+        <div class="field">
+          <input class="input" id="username" type="text" placeholder="your_username" autocomplete="username" />
+          <div class="hint" id="step2Hint"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--secondary" onclick="showStep(1)">Back</button>
+          <button class="btn btn--primary" onclick="nextStep2()">Next</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="step3" style="display:none">
+        <p class="step-sub" style="text-align:center">Choose a password (6+ characters).</p>
+        <div class="field">
+          <div class="password-row">
+            <input class="input" id="password" type="password" placeholder="••••••••" autocomplete="new-password" />
+            <button type="button" class="password-toggle" id="pwToggle">Show</button>
+          </div>
+          <div class="hint" id="step3Hint"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--secondary" onclick="showStep(2)">Back</button>
+          <button class="btn btn--primary" id="createBtn" onclick="submitSignup()">Create Account</button>
+        </div>
+      </div>
+
+      <p class="switch-line">Already have an account? <a href="signin.html">Sign in</a></p>
+      <p class="switch-line" style="margin-top:6px"><a href="oauth_setup.html">OAuth setup</a></p>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+    var step = 1;
+    var mode = "email";
+
+    document.getElementById("modeToggle").addEventListener("click", function (e) {
+      var btn = e.target.closest("button");
+      if (!btn) return;
+      mode = btn.getAttribute("data-mode");
+      var buttons = document.querySelectorAll("#modeToggle button");
+      buttons.forEach(function (b) { b.classList.toggle("is-active", b === btn); });
+      var input = document.getElementById("identifier");
+      input.value = "";
+      input.placeholder = mode === "email" ? "you@example.com" : "+1 555 123 4567";
+      input.setAttribute("type", mode === "email" ? "text" : "tel");
+      document.getElementById("step1Hint").textContent = "No verification code needed — we skip the SMS check.";
+      document.getElementById("step1Hint").className = "hint";
+    });
+
+    function showStep(n) {
+      step = n;
+      for (var i = 1; i <= 3; i++) {
+        document.getElementById("step" + i).style.display = i === n ? "" : "none";
+      }
+      var dots = document.querySelectorAll("#steps span");
+      dots.forEach(function (d, idx) {
+        d.className = idx + 1 === n ? "is-active" : (idx + 1 < n ? "is-done" : "");
+      });
+    }
+
+    function setHint(id, message, isError) {
+      var el = document.getElementById(id);
+      el.textContent = message || "";
+      el.className = isError ? "hint hint--error" : "hint";
+    }
+
+    function nextStep1() {
+      var value = document.getElementById("identifier").value.trim();
+      var kind = WetalkAuth.identifyIdentifier(value);
+      if (!kind) {
+        setHint("step1Hint", "Enter a valid email address or phone number.", true);
+        return;
+      }
+      if (mode === "email" && kind !== "email") {
+        setHint("step1Hint", "That looks like a phone number — switch to Phone, or enter an email.", true);
+        return;
+      }
+      if (mode === "phone" && kind !== "phone") {
+        setHint("step1Hint", "That looks like an email — switch to Email, or enter a phone number.", true);
+        return;
+      }
+      setHint("step1Hint", "");
+      showStep(2);
+    }
+
+    function nextStep2() {
+      var value = document.getElementById("username").value.trim();
+      if (value.length < 3) {
+        setHint("step2Hint", "Username must be at least 3 characters.", true);
+        return;
+      }
+      setHint("step2Hint", "");
+      showStep(3);
+    }
+
+    function submitSignup() {
+      var password = document.getElementById("password").value;
+      if (password.length < 6) {
+        setHint("step3Hint", "Password must be at least 6 characters.", true);
+        return;
+      }
+      setHint("step3Hint", "");
+      var btn = document.getElementById("createBtn");
+      btn.disabled = true;
+      btn.textContent = "Creating…";
+
+      WetalkAuth.createAccount({
+        identifier: document.getElementById("identifier").value,
+        username: document.getElementById("username").value,
+        password: password
+      }).then(function (res) {
+        if (res.ok) {
+          window.location.replace("works.html");
+        } else {
+          btn.disabled = false;
+          btn.textContent = "Create Account";
+          setHint("step3Hint", res.error, true);
+        }
+      });
+    }
+
+    var pwToggle = document.getElementById("pwToggle");
+    pwToggle.addEventListener("click", function () {
+      var input = document.getElementById("password");
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      pwToggle.textContent = show ? "Hide" : "Show";
+    });
+
+    document.getElementById("identifier").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") nextStep1();
+    });
+    document.getElementById("username").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") nextStep2();
+    });
+    document.getElementById("password").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") submitSignup();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign In — Wetalk</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <div class="card card--wide">
+      <div class="wordmark">
+        <div class="brand">
+          <span class="brand__mark">W</span>
+          <span class="brand__name">Wetalk</span>
+        </div>
+      </div>
+      <h1 class="step-heading" style="text-align:center">Welcome back</h1>
+      <p class="tagline">Jump back into your practice.</p>
+
+      <!-- One-click providers -->
+      <button class="btn btn--oauth" onclick="WetalkAuth.oauthSignIn('google')">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <button class="btn btn--oauth" style="margin-top:10px" onclick="WetalkAuth.oauthSignIn('github')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+        Continue with GitHub
+      </button>
+
+      <div class="divider">or sign in with email or phone</div>
+
+      <div class="field">
+        <label for="identifier">Email or phone number</label>
+        <input class="input" id="identifier" type="text" placeholder="you@example.com" autocomplete="email" />
+        <div class="hint" id="identifierHint"></div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="password-row">
+          <input class="input" id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+          <button type="button" class="password-toggle" id="pwToggle">Show</button>
+        </div>
+        <div class="hint" id="passwordHint"></div>
+      </div>
+
+      <button class="btn btn--primary" id="signinBtn" onclick="submitSignin()">Sign In</button>
+
+      <p class="switch-line">New here? <a href="signup.html">Create an account</a></p>
+      <p class="switch-line" style="margin-top:6px"><a href="oauth_setup.html">OAuth setup</a></p>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+    function setHint(id, message, isError) {
+      var el = document.getElementById(id);
+      el.textContent = message || "";
+      el.className = isError ? "hint hint--error" : "hint";
+    }
+
+    function submitSignin() {
+      var identifier = document.getElementById("identifier").value.trim();
+      var password = document.getElementById("password").value;
+
+      if (!identifier) { setHint("identifierHint", "Enter your email or phone number.", true); return; }
+      if (!password) { setHint("passwordHint", "Enter your password.", true); return; }
+      setHint("identifierHint", "");
+      setHint("passwordHint", "");
+
+      var btn = document.getElementById("signinBtn");
+      btn.disabled = true;
+      btn.textContent = "Signing in…";
+
+      WetalkAuth.authenticate(identifier, password).then(function (res) {
+        if (res.ok) {
+          window.location.replace("works.html");
+        } else {
+          btn.disabled = false;
+          btn.textContent = "Sign In";
+          setHint("passwordHint", res.error, true);
+        }
+      });
+    }
+
+    var pwToggle = document.getElementById("pwToggle");
+    pwToggle.addEventListener("click", function () {
+      var input = document.getElementById("password");
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      pwToggle.textContent = show ? "Hide" : "Show";
+    });
+
+    document.getElementById("identifier").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") document.getElementById("password").focus();
+    });
+    document.getElementById("password").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") submitSignin();
+    });
+  </script>
+</body>
+</html>
