@@ -3,8 +3,9 @@
 Wetalk runs with **no backend** by default: until a Supabase project is
 connected, the site runs in **Preview mode** and accounts are stored in the
 visitor's browser (localStorage). The live site at
-<https://junlinpeng.github.io/wetalk/> ships in Preview mode and keeps working
-exactly as it does today.
+<https://junlinpeng.github.io/wetalk/> is connected to a Supabase project.
+Without Supabase configuration (for example a fork or a local checkout) the app
+runs in Preview mode and keeps working exactly as it does today.
 
 Connecting Supabase upgrades the app to **real accounts**:
 

@@ -5,7 +5,7 @@ turn your deadline into a day-by-day practice plan, rehearse with timers, and ge
 AI feedback scored on organisation, analysis, delivery and creativity. It also
 includes an NSDA-style Impromptu trainer (draw 3 prompts, 7-minute round).
 
-**Live site:** <https://junlinpeng.github.io/wetalk/>
+**Live site:** <https://junlinpeng.github.io/wetalk/> — connected to Supabase, so sign-ups are real accounts.
 
 ## Features
 
@@ -34,13 +34,17 @@ powershell -File scripts/serve.ps1
 
 ## Accounts and data
 
-Wetalk is **live in Preview mode** until a Supabase project is connected: the
-site works end-to-end, but accounts and saved works live in each visitor's
-browser (a slim banner says so).
+The live site is connected to a Supabase project: sign-up/sign-in are real
+(email + password; Google/GitHub OAuth can be enabled later), saved works sync
+to the account, and all rows are protected by row-level security in Postgres.
+The browser only ever holds the public publishable/anon key.
 
-Connect a free Supabase project to get real accounts (email/password, optional
-Google/GitHub OAuth, password reset), cloud-saved works and row-level-security
-protected data:
+If you fork the repository without configuring Supabase, the app automatically
+runs in **Preview mode** instead: accounts and saved works stay in each
+visitor's browser (a slim banner says so), so the site still works end-to-end
+before any backend exists.
+
+To connect your own free Supabase project (about 5 minutes), follow
 
 1. Follow **[docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)** (about 5 minutes).
 2. Optionally deploy the AI proxy: **[docs/AI_PROXY_SETUP.md](docs/AI_PROXY_SETUP.md)**.
