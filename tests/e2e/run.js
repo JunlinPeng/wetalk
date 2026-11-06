@@ -26,6 +26,7 @@ const SPECS = [
   require("./specs/links.spec"),
   require("./specs/a11y.spec"),
   require("./specs/auth.spec"),
+  require("./specs/flow.spec"),
   require("./specs/responsive.spec"),
   require("./specs/screenshots.spec"),
 ];

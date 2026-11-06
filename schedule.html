@@ -32,8 +32,8 @@
         </div>
 
         <div id="noProvider" class="api-panel" style="display:none">
-          <h2 class="api-panel__title">Connect an AI provider first</h2>
-          <p class="api-panel__desc">The schedule and PowerPoint are generated with your AI. <a href="script.html">Connect a provider →</a></p>
+          <h2 class="api-panel__title">Running without AI</h2>
+          <p class="api-panel__desc">AI isn't connected, so Wetalk will build a built-in offline plan. For a plan tailored to your speech, <a href="script.html">connect an AI provider</a>.</p>
         </div>
 
         <span class="choice-label">When do you present?</span>
@@ -145,6 +145,12 @@
       el.style.display = "";
     }
 
+    function updateProviderNote() {
+      var el = document.getElementById("noProvider");
+      if (!el) return;
+      el.style.display = WetalkLLM.hasConfig() ? "none" : "";
+    }
+
     window.addEventListener("wetalk:ai", updateQuotaHint);
     window.addEventListener("wetalk:ai-error", function (e) {
       updateQuotaHint();
@@ -153,9 +159,10 @@
       }
     });
     if (WetalkAuth.onChange) {
-      try { WetalkAuth.onChange(function () { updateQuotaHint(); }); } catch (e) {}
+      try { WetalkAuth.onChange(function () { updateQuotaHint(); updateProviderNote(); }); } catch (e) {}
     }
     updateQuotaHint();
+    updateProviderNote();
 
     function daysUntil() {
       var dateVal = document.getElementById("dateInput").value;
@@ -169,22 +176,24 @@
     // ---------- schedule ----------
     document.getElementById("genScheduleBtn").onclick = function () {
       if (!speech.trim()) { setHint("deadlineHint", "You need a speech first — go back and write or generate one.", true); return; }
-      if (!WetalkLLM.hasConfig()) {
-        document.getElementById("noProvider").style.display = "";
-        setHint("deadlineHint", "", false);
-        return;
-      }
       var days = daysUntil();
       if (days === null) { setHint("deadlineHint", "Choose a date.", true); return; }
       if (days < 1) { setHint("deadlineHint", "Choose a future date and time.", true); return; }
 
-      setHint("deadlineHint", "", false);
+      var usingAI = WetalkLLM.hasConfig();
+      updateProviderNote();
+      // No AI is not a dead end: generateSchedule() falls back to an offline plan.
+      setHint("deadlineHint", usingAI ? "" : "No AI connected - building a built-in offline plan you can follow.", false);
+
       var btn = document.getElementById("genScheduleBtn");
       btn.disabled = true; btn.textContent = "Generating…";
 
       WetalkPlanner.generateSchedule(title, speech, days).then(function (plan) {
         btn.disabled = false; btn.textContent = "Regenerate schedule";
         renderSchedule(plan);
+        if (!usingAI) {
+          setHint("deadlineHint", "Offline plan ready. Connect AI for a plan tailored to your speech.", false);
+        }
       }).catch(function (e) {
         btn.disabled = false; btn.textContent = "Generate my schedule";
         setHint("deadlineHint", "Failed: " + e.message, true);
@@ -229,9 +238,9 @@
         document.getElementById("pptStatus").textContent = "You need a speech first.";
         return;
       }
-      if (!WetalkLLM.hasConfig()) {
-        document.getElementById("pptStatus").textContent = "Connect an AI provider first (go back to the speech page).";
-        return;
+      var usingAI = WetalkLLM.hasConfig();
+      if (!usingAI) {
+        document.getElementById("pptStatus").textContent = "Building a built-in offline outline - connect AI for a tailored deck.";
       }
       WetalkPlanner.generatePPT(title, speech).then(function (outline) {
         window._pptOutline = outline;

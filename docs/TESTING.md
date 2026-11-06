@@ -5,7 +5,7 @@ Automated quality gates for the static site in this repository. Two layers:
 | Layer | Runner | What it proves |
 | --- | --- | --- |
 | Unit | Node's built-in test runner (`node --test`) | Pure browser logic: auth validation, preview-mode accounts/sessions, works archive/resume, planner JSON parsing and AI fallbacks, cloud/local works merge |
-| End-to-end | `playwright-core` driving the **installed Microsoft Edge** | Static pages load cleanly and return 200, no JS/console errors, internal links resolve, accessibility smoke checks, signup/sign-out/sign-in journey, 390x844 mobile layout with no horizontal scroll, screenshots for visual review |
+| End-to-end | `playwright-core` driving the **installed Microsoft Edge** | Static pages load cleanly and return 200, no JS/console errors, internal links resolve, accessibility smoke checks, signup/sign-out/sign-in journey, complete Preview-mode journey (topic -> manual speech -> offline plan -> check-in -> practice feedback -> works), 390x844 mobile layout with no horizontal scroll, screenshots for visual review |
 
 The tests are dev-only. The shipped site stays dependency-free: everything
 lives under `tests/` and nothing from `node_modules` is loaded by pages.
@@ -42,8 +42,8 @@ $node = "C:\Users\Junlin Peng\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies
 # Browser suite only
 & $node tests/run-all.js --e2e-only
 
-# One e2e spec: http | pages | links | a11y | auth | responsive | screenshots
-& $node tests/e2e/run.js --only auth
+# One e2e spec: http | pages | links | a11y | auth | flow | responsive | screenshots
+& $node tests/e2e/run.js --only flow
 
 # Refresh the screenshots for visual review
 & $node tests/run-all.js --screenshots-only

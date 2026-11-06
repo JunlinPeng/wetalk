@@ -67,6 +67,7 @@
           <div class="btn-row" id="platformCancelRow" style="display:none;margin-top:10px">
             <button class="btn btn--ghost" id="platformCancelBtn">Use account AI instead</button>
           </div>
+          <button type="button" class="btn btn--ghost" id="manualInsteadBtn" style="margin-top:10px">Write it myself instead (no AI needed)</button>
         </div>
 
         <!-- Work view (shown after the key is saved) -->
@@ -151,21 +152,27 @@
     }
 
     // ---- show/hide API panel vs work view ----
+    // Manual mode never requires an AI provider (important in Preview mode).
     function refresh() {
       var has = WetalkLLM.hasConfig();
       var platform = platformModeOn();
       var ownKey = !!(WetalkLLM.hasPersonalKey && WetalkLLM.hasPersonalKey());
+      var manual = draft.mode === "manual";
+      var showWork = has || manual;
       var changeBtn = document.getElementById("changeApiBtn");
       var accountRow = document.getElementById("accountAiRow");
       var cancelRow = document.getElementById("platformCancelRow");
+      var manualBtn = document.getElementById("manualInsteadBtn");
 
-      document.getElementById("apiPanel").style.display = has ? "none" : "";
-      document.getElementById("workView").style.display = has ? "" : "none";
+      document.getElementById("apiPanel").style.display = showWork ? "none" : "";
+      document.getElementById("workView").style.display = showWork ? "" : "none";
       if (cancelRow) cancelRow.style.display = "none";
+      if (manualBtn) manualBtn.style.display = (showWork || manual) ? "none" : "";
 
       if (platform) {
         document.getElementById("configSummary").textContent = quotaLine();
         changeBtn.textContent = "Use my own key";
+        changeBtn.style.display = "";
         if (accountRow) accountRow.style.display = "none";
       } else if (has) {
         var c = WetalkLLM.getConfig() || {};
@@ -173,15 +180,17 @@
         document.getElementById("configSummary").innerHTML =
           "Connected: <b>" + (p ? p.name : (c.provider || "Custom")) + "</b> · " + (c.model || "");
         changeBtn.textContent = "Change API";
+        changeBtn.style.display = "";
         if (accountRow) accountRow.style.display = (platformAvailable() && ownKey) ? "" : "none";
-      } else if (accountRow) {
-        accountRow.style.display = "none";
+      } else {
+        // Manual mode, no AI connected: writing still works offline.
+        document.getElementById("configSummary").textContent = "Writing it yourself - no AI needed for this step.";
+        changeBtn.style.display = "none";
+        if (accountRow) accountRow.style.display = "none";
       }
 
-      if (has) {
-        document.getElementById("aiView").style.display = (draft.mode === "manual") ? "none" : "";
-        document.getElementById("manualView").style.display = (draft.mode === "manual") ? "" : "none";
-      }
+      document.getElementById("aiView").style.display = (showWork && !manual) ? "" : "none";
+      document.getElementById("manualView").style.display = (showWork && manual) ? "" : "none";
     }
 
     function showApiPanel() {
@@ -256,6 +265,17 @@
     };
 
     document.getElementById("changeApiBtn").onclick = showApiPanel;
+
+    // Skip AI entirely: switch the draft to manual writing and show the editor.
+    var manualInsteadBtn = document.getElementById("manualInsteadBtn");
+    if (manualInsteadBtn) manualInsteadBtn.onclick = function () {
+      draft.mode = "manual";
+      try { localStorage.setItem("wetalk.topicDraft", JSON.stringify({ topic: draft.topic || "", mode: "manual" })); } catch (e) {}
+      document.getElementById("draftMode").textContent = "I'll write it myself";
+      refresh();
+      restoreSpeech();
+      toast("No AI needed - write your speech below.");
+    };
 
     var accountAiBtn = document.getElementById("accountAiBtn");
     if (accountAiBtn) accountAiBtn.onclick = useAccountAI;

@@ -105,7 +105,7 @@ Dev-only tooling; the shipped site stays dependency-free.
 node tests/run-all.js
 ```
 
-59 unit tests and about 125 browser checks cover every page, the Preview-mode
+59 unit tests and about 130 browser checks cover every page, the Preview-mode
 auth flow, link integrity, accessibility smoke checks, responsive layouts
 (390 px / 1440 px) and screenshots. See [docs/TESTING.md](docs/TESTING.md).
 
