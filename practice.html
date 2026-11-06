@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#021024" />
   <title>Practice — Wetalk</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -26,6 +28,7 @@
             <label>Today's segment</label>
             <div class="input" id="segmentSummary" style="cursor:default;white-space:pre-wrap;line-height:1.6"></div>
           </div>
+          <p class="hint" id="aiQuotaHint" style="display:none"></p>
           <button class="btn btn--primary" id="startBtn">Start practice</button>
         </section>
 
@@ -53,7 +56,7 @@
 
         <!-- Stage 4: results -->
         <section id="stage-results" style="display:none">
-          <h1 class="step-heading">Your feedback</h1>
+          <h2 class="step-heading">Your feedback</h2>
           <p class="tagline" style="text-align:left;margin-top:2px">Organization · Analysis · Delivery · Creativity</p>
           <div id="aiScores" style="margin-top:16px"></div>
           <div class="tips">
@@ -71,6 +74,8 @@
     </main>
   </div>
 
+  <script src="js/config.js"></script>
+  <script src="js/vendor/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/llm.js"></script>
   <script src="js/planner.js"></script>
@@ -85,6 +90,34 @@
       var m = e.reason && e.reason.message ? e.reason.message : String(e.reason);
       if (WetalkAuth && WetalkAuth.toast) WetalkAuth.toast("Error: " + m);
     });
+
+    // ---------- included AI quota (platform mode only) ----------
+    function platformModeOn() {
+      return !!(WetalkLLM.isPlatformMode && WetalkLLM.isPlatformMode());
+    }
+
+    function updateQuotaHint() {
+      var el = document.getElementById("aiQuotaHint");
+      if (!el) return;
+      if (!platformModeOn()) { el.style.display = "none"; return; }
+      var q = (WetalkLLM.getQuota ? WetalkLLM.getQuota() : null) || {};
+      var limit = (typeof q.limit === "number" && q.limit > 0) ? q.limit : 20;
+      var remaining = (typeof q.remaining === "number") ? q.remaining : limit;
+      el.textContent = "AI feedback uses your account AI - " + remaining + " of " + limit + " requests left today.";
+      el.style.display = "";
+    }
+
+    window.addEventListener("wetalk:ai", updateQuotaHint);
+    window.addEventListener("wetalk:ai-error", function (e) {
+      updateQuotaHint();
+      if (e.detail && e.detail.code === "quota_exceeded" && WetalkAuth.toast) {
+        WetalkAuth.toast("Daily AI limit reached - using offline scoring.");
+      }
+    });
+    if (WetalkAuth.onChange) {
+      try { WetalkAuth.onChange(function () { updateQuotaHint(); }); } catch (e) {}
+    }
+    updateQuotaHint();
 
     WetalkLLM.importLegacyConfig();
     WetalkPractice.init();

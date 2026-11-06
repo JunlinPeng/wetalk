@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#021024" />
+  <title>Reset Password - Wetalk</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <div class="card card--wide">
+      <div class="wordmark">
+        <div class="brand">
+          <span class="brand__mark">W</span>
+          <span class="brand__name">Wetalk</span>
+        </div>
+      </div>
+
+      <div id="resetView">
+        <h1 class="step-heading" style="text-align:center">Reset your password</h1>
+        <p class="tagline">Enter the email you signed up with and we'll send you a reset link.</p>
+
+        <form id="resetForm" novalidate>
+          <div class="field">
+            <label for="email">Email</label>
+            <input class="input" id="email" type="email" placeholder="you@example.com" autocomplete="email" spellcheck="false" autofocus />
+            <div class="hint" id="emailHint" role="alert"></div>
+          </div>
+
+          <button class="btn btn--primary" id="resetBtn" type="submit">Send reset link</button>
+          <div class="hint" id="formHint" role="alert" style="margin-top:12px;text-align:center"></div>
+        </form>
+
+        <p class="switch-line">Remembered it? <a href="signin.html">Back to sign in</a></p>
+      </div>
+
+      <div id="successView" style="display:none">
+        <h2 class="step-heading" style="text-align:center">Check your inbox</h2>
+        <p class="tagline">If an account exists for <b id="successEmail">your email</b>, a reset link is on its way. Open it to choose a new password.</p>
+        <p class="hint" style="text-align:center">The link can take a minute to arrive. Check your spam folder if you don't see it.</p>
+        <div class="btn-row" style="margin-top:24px">
+          <a class="btn btn--primary" href="signin.html">Back to sign in</a>
+        </div>
+        <p class="switch-line" style="margin-top:18px"><a href="reset.html">Send to a different email</a></p>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/vendor/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var form = document.getElementById("resetForm");
+      var emailInput = document.getElementById("email");
+      var resetBtn = document.getElementById("resetBtn");
+
+      var params = new URLSearchParams(window.location.search);
+      var prefill = params.get("email");
+      if (prefill) emailInput.value = prefill;
+
+      function setHint(id, message, isError) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = message || "";
+        el.className = isError ? "hint hint--error" : "hint";
+      }
+
+      if (WetalkAuth.isPreviewMode()) {
+        // Be honest: there is no server that can send an email yet.
+        setHint("formHint", "Preview mode: accounts are stored in this browser, so there is no reset email to send. Create a new account instead.", false);
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        setHint("emailHint", "");
+        setHint("formHint", "");
+
+        var email = emailInput.value.trim();
+        var emailError = WetalkAuth.validateEmail(email);
+        if (emailError) {
+          setHint("emailHint", emailError, true);
+          emailInput.focus();
+          return;
+        }
+
+        resetBtn.disabled = true;
+        resetBtn.textContent = "Sending...";
+        WetalkAuth.resetPassword(email)
+          .then(function (result) {
+            if (!result || !result.ok) {
+              resetBtn.disabled = false;
+              resetBtn.textContent = "Send reset link";
+              setHint("formHint", (result && result.error) || "Could not send the reset email. Please try again.", true);
+              return;
+            }
+            document.getElementById("resetView").style.display = "none";
+            document.getElementById("successEmail").textContent = email.toLowerCase();
+            document.getElementById("successView").style.display = "";
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+          })
+          .catch(function () {
+            resetBtn.disabled = false;
+            resetBtn.textContent = "Send reset link";
+            setHint("formHint", "Could not send the reset email. Please try again.", true);
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

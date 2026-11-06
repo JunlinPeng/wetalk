@@ -1,0 +1,19 @@
+{
+  "name": "wetalk-qa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dev-only QA tooling for the Wetalk static site. The site itself stays dependency-free: everything here lives under tests/ and is never shipped.",
+  "scripts": {
+    "test": "node tests/run-all.js",
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:e2e": "node tests/e2e/run.js",
+    "serve": "node tests/helpers/static-server.js --port 8104 --root .",
+    "screenshots": "node tests/e2e/run.js --screenshots-only"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

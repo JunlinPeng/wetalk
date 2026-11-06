@@ -3,33 +3,379 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Wetalk — Say it naturally</title>
+  <title>Wetalk - from blank page to confident speech</title>
+  <meta name="description" content="Wetalk is an AI speech coach for students: write a natural speech, get a day-by-day practice plan, train impromptu rounds and score every rehearsal on organisation, analysis, delivery and creativity." />
+  <meta name="theme-color" content="#021024" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Wetalk - from blank page to confident speech" />
+  <meta property="og:description" content="An AI speech coach for students: AI writing, a personalised practice plan, an impromptu timer and scored feedback." />
+  <meta property="og:url" content="https://junlinpeng.github.io/wetalk/" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <main class="page">
-    <div class="card">
-      <div class="wordmark">
-        <div class="brand">
-          <span class="brand__mark">W</span>
-          <span class="brand__name">Wetalk</span>
-        </div>
-      </div>
-      <p class="tagline">Prepare, practice and speak with confidence.</p>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-      <div class="btn-row">
-        <button class="btn btn--primary" onclick="location.href='signup.html'">Sign Up</button>
-        <button class="btn btn--secondary" onclick="location.href='signin.html'">Sign In</button>
+  <header class="site-nav" id="top">
+    <div class="container site-nav__inner">
+      <a class="brand" href="index.html" aria-label="Wetalk home">
+        <span class="brand__mark" aria-hidden="true">W</span>
+        <span class="brand__name">Wetalk</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#how">How it works</a>
+        <a class="nav-link" href="#modes">Modes</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn--ghost" id="navSignIn" href="signin.html">Sign in</a>
+        <a class="btn btn--primary" id="navCta" href="signup.html" data-signed-in-href="app.html" data-signed-in-text="Open Wetalk">Get started</a>
       </div>
     </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow">AI speech coach for students</p>
+          <h1 class="hero__title" id="hero-title">From blank page to <span class="accent">confident speech</span>.</h1>
+          <p class="hero__sub">
+            Wetalk writes with you, turns your deadline into a day-by-day practice plan,
+            and scores every rehearsal on organisation, analysis, delivery and creativity -
+            so you walk in knowing you are ready.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--lg" href="signup.html" data-signed-in-href="app.html" data-signed-in-text="Open Wetalk">Get started free</a>
+            <a class="btn btn--secondary btn--lg" href="#how">See how it works</a>
+          </div>
+          <p class="hero__note">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m4 12.5 5 5L20 6.5" />
+            </svg>
+            <span>No downloads and no accounts needed to explore - in Preview mode your account and works stay in this browser.</span>
+          </p>
+        </div>
+
+        <div class="hero__visual">
+          <div class="mock" role="img" aria-label="Preview of the Wetalk dashboard: a greeting, a seven minute speech timer, today's practice focus and AI scores for organisation, analysis, delivery and creativity.">
+            <div class="mock__chrome">
+              <span class="mock__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="mock__addr">wetalk.app / dashboard</span>
+              <span class="mock__tag">AI feedback</span>
+            </div>
+            <div class="mock__screen">
+              <div class="mock__head">
+                <div>
+                  <div class="mock__hello">Good evening, Alex</div>
+                  <div class="mock__sub">School assembly speech - 4 days to go</div>
+                </div>
+                <div class="mock__timer">07:00</div>
+              </div>
+              <div class="mock__panels">
+                <div class="mock__card">
+                  <div class="mock__label">Today's focus</div>
+                  <div class="mock__value">Delivery - pace and pauses</div>
+                  <div class="mock__track"><span class="mock__fill" style="width:72%"></span></div>
+                  <div class="mock__meta">Day 3 of 7 - 18 min session</div>
+                </div>
+                <div class="mock__score">
+                  <svg class="mock__ring" viewBox="0 0 80 80" aria-hidden="true">
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(84,131,179,0.25)" stroke-width="7" />
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="#C1E8FF" stroke-width="7" stroke-linecap="round" stroke-dasharray="160 214" transform="rotate(-90 40 40)" />
+                  </svg>
+                  <span class="mock__score-num">7.5</span>
+                  <span class="mock__score-cap">Overall</span>
+                </div>
+              </div>
+              <div class="mock__criteria">
+                <div class="mock__criterion"><b>Organisation</b><span class="mock__track"><span class="mock__fill" style="width:82%"></span></span><em>8.2</em></div>
+                <div class="mock__criterion"><b>Analysis</b><span class="mock__track"><span class="mock__fill" style="width:74%"></span></span><em>7.4</em></div>
+                <div class="mock__criterion"><b>Delivery</b><span class="mock__track"><span class="mock__fill" style="width:68%"></span></span><em>6.8</em></div>
+                <div class="mock__criterion"><b>Creativity</b><span class="mock__track"><span class="mock__fill" style="width:76%"></span></span><em>7.6</em></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product facts -->
+    <section class="section--tight" aria-label="Wetalk at a glance">
+      <div class="container">
+        <div class="proof">
+          <div class="proof__item">
+            <div class="proof__value">4</div>
+            <div class="proof__label">AI-scored criteria</div>
+          </div>
+          <div class="proof__item">
+            <div class="proof__value">7:00</div>
+            <div class="proof__label">impromptu timer</div>
+          </div>
+          <div class="proof__item">
+            <div class="proof__value">3</div>
+            <div class="proof__label">prompts drawn per round</div>
+          </div>
+          <div class="proof__item">
+            <div class="proof__value">0</div>
+            <div class="proof__label">installs required</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section__head reveal">
+          <p class="eyebrow">Features</p>
+          <h2 class="section__title" id="features-title">Everything around your speech, in one place</h2>
+          <p class="section__sub">Writing, planning and rehearsal are one loop - not four disconnected tools.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature reveal">
+            <span class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+            </span>
+            <h3 class="feature__title">AI speech writing</h3>
+            <p class="feature__desc">Give Wetalk your topic and key points. It returns a natural, speakable draft - or reviews the speech you have already written, line by line.</p>
+          </article>
+          <article class="feature reveal">
+            <span class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M8 15h3" />
+              </svg>
+            </span>
+            <h3 class="feature__title">Personalised practice plan</h3>
+            <p class="feature__desc">Set your presentation date. Wetalk splits the work into daily sessions of 10 to 30 minutes that build steadily towards the real thing.</p>
+          </article>
+          <article class="feature reveal">
+            <span class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5M9 2h6" />
+              </svg>
+            </span>
+            <h3 class="feature__title">Impromptu trainer</h3>
+            <p class="feature__desc">Draw three NSDA-style prompts, prepare, then speak against a visible seven-minute clock - the same rhythm as a competitive round.</p>
+          </article>
+          <article class="feature reveal">
+            <span class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+              </svg>
+            </span>
+            <h3 class="feature__title">Four-criteria AI feedback</h3>
+            <p class="feature__desc">Each rehearsal is scored on organisation, analysis, delivery and creativity, with concrete fixes instead of vague praise.</p>
+          </article>
+          <article class="feature reveal">
+            <span class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" /><path d="m8.5 12.5 2.5 2.5 4.5-5" />
+              </svg>
+            </span>
+            <h3 class="feature__title">Daily check-in</h3>
+            <p class="feature__desc">A short drill keeps momentum: what to focus on today, why it matters, and a one-click path straight into practice.</p>
+          </article>
+          <article class="feature reveal">
+            <span class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+              </svg>
+            </span>
+            <h3 class="feature__title">Your works, saved</h3>
+            <p class="feature__desc">Every speech, plan and score stays in one list, so you can reopen a project and resume exactly where you stopped.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section section--alt" id="how" aria-labelledby="how-title">
+      <div class="container">
+        <div class="section__head reveal">
+          <p class="eyebrow">How it works</p>
+          <h2 class="section__title" id="how-title">Three steps from idea to delivery</h2>
+          <p class="section__sub">The whole process is designed around one deadline: yours.</p>
+        </div>
+        <div class="how-grid">
+          <article class="how-step reveal">
+            <span class="how-step__num">01</span>
+            <h3 class="how-step__title">Choose a mode</h3>
+            <p class="how-step__desc">Start with a topic you already have, or draw three surprise prompts if the page is still blank.</p>
+            <ul class="how-step__list">
+              <li>Topic in, AI draft out</li>
+              <li>Or write it yourself and keep the feedback</li>
+            </ul>
+          </article>
+          <article class="how-step reveal">
+            <span class="how-step__num">02</span>
+            <h3 class="how-step__title">Get your plan</h3>
+            <p class="how-step__desc">Tell Wetalk when you present. It builds a day-by-day schedule with the segment and drills for each session.</p>
+            <ul class="how-step__list">
+              <li>Deadline-aware daily tasks</li>
+              <li>Optional PowerPoint outline from your speech</li>
+            </ul>
+          </article>
+          <article class="how-step reveal">
+            <span class="how-step__num">03</span>
+            <h3 class="how-step__title">Rehearse and improve</h3>
+            <p class="how-step__desc">Speak out loud, then paste what you actually said. You get scores and specific, practical fixes to apply next time.</p>
+            <ul class="how-step__list">
+              <li>Scores for four criteria</li>
+              <li>Coach tips that target your weakest area</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modes -->
+    <section class="section" id="modes" aria-labelledby="modes-title">
+      <div class="container">
+        <div class="section__head reveal">
+          <p class="eyebrow">Pick your path</p>
+          <h2 class="section__title" id="modes-title">Four ways to practise</h2>
+          <p class="section__sub">Same scoring engine, different formats. Start with whichever matches your next deadline.</p>
+        </div>
+        <div class="mode-grid">
+          <a class="mode-card reveal" href="topic.html">
+            <span class="mode-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
+              </svg>
+            </span>
+            <h3 class="mode-card__title">I have a topic</h3>
+            <p class="mode-card__desc">Bring a topic from class or choose your own. Get an AI-written speech or write it yourself - then a plan and feedback follow.</p>
+            <div class="mode-card__meta"><span>AI draft</span><span>Daily plan</span></div>
+            <span class="mode-card__go">Start with a topic
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </span>
+          </a>
+          <a class="mode-card reveal" href="impromptu.html">
+            <span class="mode-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" /><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor" /><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" /><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor" />
+              </svg>
+            </span>
+            <h3 class="mode-card__title">I don't have a topic</h3>
+            <p class="mode-card__desc">Draw three prompts, pick one, and run a full impromptu round with preparation, speaking and scoring timers.</p>
+            <div class="mode-card__meta"><span>7:00 timer</span><span>AI scores</span></div>
+            <span class="mode-card__go">Draw a prompt
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </span>
+          </a>
+          <div class="mode-card mode-card--soon reveal">
+            <span class="mode-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 10a7 7 0 0 0 14 0M12 19v3" />
+              </svg>
+            </span>
+            <h3 class="mode-card__title">Vericant interview</h3>
+            <p class="mode-card__desc">Practise the short-answer interview format with timed questions and structured feedback on your answers.</p>
+            <div class="mode-card__meta"><span class="badge badge--soon">Coming soon</span></div>
+          </div>
+          <div class="mode-card mode-card--soon reveal">
+            <span class="mode-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" />
+              </svg>
+            </span>
+            <h3 class="mode-card__title">TOEFL speaking</h3>
+            <p class="mode-card__desc">Work through timed speaking tasks with the same organisation and delivery scoring you get in practice mode.</p>
+            <div class="mode-card__meta"><span class="badge badge--soon">Coming soon</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final call to action -->
+    <section class="section--tight" aria-labelledby="cta-title">
+      <div class="container">
+        <div class="cta-band reveal">
+          <h2 class="cta-band__title" id="cta-title">Your next speech starts here</h2>
+          <p class="cta-band__sub">Create an account, pick a mode, and get your first practice plan in under two minutes.</p>
+          <div class="cta-band__actions">
+            <a class="btn btn--primary btn--lg" href="signup.html" data-signed-in-href="app.html" data-signed-in-text="Open Wetalk">Get started free</a>
+            <a class="btn btn--secondary btn--lg" href="signin.html" id="ctaSignIn">I already have an account</a>
+          </div>
+          <p class="cta-band__note">Free while in Preview mode. No card, no installs.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
+  <footer class="site-foot">
+    <div class="container">
+      <div class="site-foot__grid">
+        <div class="site-foot__brand">
+          <a class="brand" href="index.html" aria-label="Wetalk home">
+            <span class="brand__mark" aria-hidden="true">W</span>
+            <span class="brand__name">Wetalk</span>
+          </a>
+          <p class="site-foot__tagline">An AI speech coach for students. Write it, plan it, rehearse it, and say it naturally.</p>
+        </div>
+        <div class="site-foot__col">
+          <h2 class="site-foot__title">Product</h2>
+          <div class="site-foot__links">
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
+            <a href="#modes">Modes</a>
+          </div>
+        </div>
+        <div class="site-foot__col">
+          <h2 class="site-foot__title">Get started</h2>
+          <div class="site-foot__links">
+            <a href="signup.html" data-signed-in-href="app.html" data-signed-in-text="Open Wetalk">Create an account</a>
+            <a href="signin.html" id="footSignIn">Sign in</a>
+            <a href="app.html">Dashboard</a>
+          </div>
+        </div>
+      </div>
+      <div class="site-foot__bottom">
+        <p>Wetalk - built for students. No trackers, no ads.</p>
+        <p>Preview mode: accounts and works stay in this browser.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/vendor/supabase.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
   <script>
-    // If already signed in, go straight into the app.
-    if (WetalkAuth && WetalkAuth.getSession && WetalkAuth.getSession()) {
-      location.replace("works.html");
-    }
+    (function () {
+      "use strict";
+      var ui = window.WetalkUI;
+      var session = ui ? ui.getSession() : null;
+      if (!session) return;
+
+      document.documentElement.classList.add("is-signed-in");
+
+      // Signed in: the primary CTA opens the app instead of asking to sign up.
+      var ctas = document.querySelectorAll("[data-signed-in-href]");
+      for (var i = 0; i < ctas.length; i++) {
+        var el = ctas[i];
+        el.setAttribute("href", el.getAttribute("data-signed-in-href"));
+        var label = el.getAttribute("data-signed-in-text");
+        if (label) el.textContent = label;
+      }
+
+      // Hide redundant sign-in links for signed-in visitors.
+      var signIn = document.getElementById("navSignIn");
+      if (signIn && signIn.parentNode) signIn.parentNode.removeChild(signIn);
+      var ctaSignIn = document.getElementById("ctaSignIn");
+      if (ctaSignIn) {
+        ctaSignIn.setAttribute("href", "app.html");
+        ctaSignIn.textContent = "Open your dashboard";
+      }
+      var footSignIn = document.getElementById("footSignIn");
+      if (footSignIn && footSignIn.parentNode) footSignIn.parentNode.removeChild(footSignIn);
+    })();
   </script>
 </body>
 </html>

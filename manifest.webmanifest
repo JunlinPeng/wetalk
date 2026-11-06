@@ -1,0 +1,25 @@
+{
+  "name": "Wetalk - AI speech coach",
+  "short_name": "Wetalk",
+  "description": "Write a natural speech, get a personalised practice plan, train impromptu rounds and score every rehearsal.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#021024",
+  "theme_color": "#021024",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

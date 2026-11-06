@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#021024" />
   <title>Your speech — Wetalk</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -62,6 +64,9 @@
             <button class="btn btn--secondary" id="testBtn">Test connection</button>
             <button class="btn btn--primary" id="saveBtn">Save &amp; continue</button>
           </div>
+          <div class="btn-row" id="platformCancelRow" style="display:none;margin-top:10px">
+            <button class="btn btn--ghost" id="platformCancelBtn">Use account AI instead</button>
+          </div>
         </div>
 
         <!-- Work view (shown after the key is saved) -->
@@ -69,6 +74,9 @@
           <div class="config-summary">
             <span class="config-summary__text" id="configSummary"></span>
             <button class="btn btn--ghost" id="changeApiBtn">Change API</button>
+          </div>
+          <div class="btn-row" id="accountAiRow" style="display:none;margin-top:10px">
+            <button class="btn btn--ghost" id="accountAiBtn">Use account AI instead</button>
           </div>
 
           <div id="aiView" style="display:none;margin-top:18px">
@@ -79,7 +87,7 @@
 
           <div id="manualView" style="display:none;margin-top:18px">
             <label style="display:block;font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:7px">Write your speech</label>
-            <textarea class="input input--area" id="manualText" placeholder="Start writing your speech here…"></textarea>
+            <textarea class="input input--area" id="manualText" aria-label="Write your speech" placeholder="Start writing your speech here…"></textarea>
             <button class="btn btn--primary" id="saveManualBtn" style="margin-top:14px">Save &amp; continue</button>
           </div>
         </div>
@@ -87,8 +95,11 @@
     </main>
   </div>
 
+  <script src="js/config.js"></script>
+  <script src="js/vendor/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/llm.js"></script>
+  <script src="js/store.js"></script>
   <script src="js/works.js"></script>
   <script>
     if (!WetalkAuth.requireAuth()) { /* redirected */ }
@@ -123,18 +134,80 @@
     sel.onchange = function () { applyProvider(sel.value); };
     applyProvider("openai");
 
+    // ---- platform (included) AI vs personal key ----
+    function platformModeOn() {
+      return !!(WetalkLLM.isPlatformMode && WetalkLLM.isPlatformMode());
+    }
+
+    function platformAvailable() {
+      return !!(WetalkLLM.isPlatformAvailable && WetalkLLM.isPlatformAvailable());
+    }
+
+    function quotaLine() {
+      var q = (WetalkLLM.getQuota ? WetalkLLM.getQuota() : null) || {};
+      var limit = (typeof q.limit === "number" && q.limit > 0) ? q.limit : 20;
+      var remaining = (typeof q.remaining === "number") ? q.remaining : limit;
+      return "AI included with your account - " + remaining + " of " + limit + " requests left today";
+    }
+
     // ---- show/hide API panel vs work view ----
     function refresh() {
       var has = WetalkLLM.hasConfig();
+      var platform = platformModeOn();
+      var ownKey = !!(WetalkLLM.hasPersonalKey && WetalkLLM.hasPersonalKey());
+      var changeBtn = document.getElementById("changeApiBtn");
+      var accountRow = document.getElementById("accountAiRow");
+      var cancelRow = document.getElementById("platformCancelRow");
+
       document.getElementById("apiPanel").style.display = has ? "none" : "";
       document.getElementById("workView").style.display = has ? "" : "none";
-      if (has) {
-        var c = WetalkLLM.getConfig();
+      if (cancelRow) cancelRow.style.display = "none";
+
+      if (platform) {
+        document.getElementById("configSummary").textContent = quotaLine();
+        changeBtn.textContent = "Use my own key";
+        if (accountRow) accountRow.style.display = "none";
+      } else if (has) {
+        var c = WetalkLLM.getConfig() || {};
         var p = WetalkLLM.findProvider(c.provider);
         document.getElementById("configSummary").innerHTML =
           "Connected: <b>" + (p ? p.name : (c.provider || "Custom")) + "</b> · " + (c.model || "");
+        changeBtn.textContent = "Change API";
+        if (accountRow) accountRow.style.display = (platformAvailable() && ownKey) ? "" : "none";
+      } else if (accountRow) {
+        accountRow.style.display = "none";
+      }
+
+      if (has) {
         document.getElementById("aiView").style.display = (draft.mode === "manual") ? "none" : "";
         document.getElementById("manualView").style.display = (draft.mode === "manual") ? "" : "none";
+      }
+    }
+
+    function showApiPanel() {
+      var c = WetalkLLM.getConfig();
+      if (c) {
+        document.getElementById("provider").value = c.provider || "custom";
+        document.getElementById("baseUrl").value = c.baseUrl || "";
+        document.getElementById("model").value = c.model || "";
+        document.getElementById("apiKey").value = c.apiKey || "";
+      }
+      document.getElementById("apiPanel").style.display = "";
+      document.getElementById("workView").style.display = "none";
+      document.getElementById("platformCancelRow").style.display = platformAvailable() ? "" : "none";
+    }
+
+    function useAccountAI() {
+      var c = WetalkLLM.getConfig() || {};
+      c.useOwnKey = false;
+      WetalkLLM.saveConfig(c);
+      refresh();
+      toast("Using the AI included with your account.");
+    }
+
+    function updateQuotaLine() {
+      if (platformModeOn()) {
+        document.getElementById("configSummary").textContent = quotaLine();
       }
     }
 
@@ -176,22 +249,24 @@
       var cfg = readForm();
       var err = validateForm(cfg);
       if (err) { toast(err); return; }
+      cfg.useOwnKey = true;
       WetalkLLM.saveConfig(cfg);
       refresh();
-      toast("API saved.");
+      toast(platformAvailable() ? "API saved - using your own key." : "API saved.");
     };
 
-    document.getElementById("changeApiBtn").onclick = function () {
-      var c = WetalkLLM.getConfig();
-      if (c) {
-        document.getElementById("provider").value = c.provider || "custom";
-        document.getElementById("baseUrl").value = c.baseUrl || "";
-        document.getElementById("model").value = c.model || "";
-        document.getElementById("apiKey").value = c.apiKey || "";
-      }
-      document.getElementById("apiPanel").style.display = "";
-      document.getElementById("workView").style.display = "none";
-    };
+    document.getElementById("changeApiBtn").onclick = showApiPanel;
+
+    var accountAiBtn = document.getElementById("accountAiBtn");
+    if (accountAiBtn) accountAiBtn.onclick = useAccountAI;
+    var platformCancelBtn = document.getElementById("platformCancelBtn");
+    if (platformCancelBtn) platformCancelBtn.onclick = useAccountAI;
+
+    window.addEventListener("wetalk:ai", updateQuotaLine);
+    window.addEventListener("wetalk:ai-error", function () { updateQuotaLine(); });
+    if (WetalkAuth.onChange) {
+      try { WetalkAuth.onChange(function () { refresh(); }); } catch (e) {}
+    }
 
     // ---- show/hide key ----
     document.getElementById("keyToggle").onclick = function () {
@@ -220,11 +295,18 @@
         try { WetalkWorks.archive(); } catch (e) {}
         document.getElementById("continueBtn").style.display = "";
         btn.textContent = "Regenerate";
+        updateQuotaLine();
       }).catch(function (err) {
         out.className = "output-area output-area--empty";
-        out.textContent = "Generation failed: " + err.message +
-          "\n\nIf this is a browser/CORS error, your provider may not allow direct browser requests. Try a CORS-enabled provider (OpenRouter, Ollama, LM Studio) or use a backend proxy.";
+        var msg = "Generation failed: " + err.message;
+        if (platformModeOn()) {
+          msg += "\n\nYou can write your speech manually below, or switch to your own API key.";
+        } else {
+          msg += "\n\nIf this is a browser/CORS error, your provider may not allow direct browser requests. Try a CORS-enabled provider (OpenRouter, Ollama, LM Studio) or use a backend proxy.";
+        }
+        out.textContent = msg;
         btn.textContent = "Try again";
+        updateQuotaLine();
       }).then(function () { btn.disabled = false; });
     };
 

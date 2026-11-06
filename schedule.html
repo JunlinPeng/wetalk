@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#021024" />
   <title>Schedule — Wetalk</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -48,6 +50,7 @@
         <div class="hint" id="deadlineHint"></div>
 
         <button class="btn btn--primary" id="genScheduleBtn">Generate my schedule</button>
+        <div class="hint" id="aiQuotaHint" style="display:none"></div>
 
         <div id="scheduleResult" style="display:none;margin-top:20px">
           <div class="config-summary" style="margin-bottom:14px">
@@ -77,9 +80,12 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
+  <script src="js/vendor/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/llm.js"></script>
   <script src="js/planner.js"></script>
+  <script src="js/store.js"></script>
   <script src="js/works.js"></script>
   <script src="js/jszip.min.js"></script>
   <script src="js/pptxgen.min.js"></script>
@@ -119,6 +125,37 @@
     }
 
     function toast(m) { if (WetalkAuth.toast) WetalkAuth.toast(m); }
+
+    // ---------- cloud sync + included AI quota ----------
+    // Pull the account's saved works in the background (no-op in Preview mode).
+    if (WetalkWorks.refresh) { WetalkWorks.refresh(); }
+
+    function platformModeOn() {
+      return !!(WetalkLLM.isPlatformMode && WetalkLLM.isPlatformMode());
+    }
+
+    function updateQuotaHint() {
+      var el = document.getElementById("aiQuotaHint");
+      if (!el) return;
+      if (!platformModeOn()) { el.style.display = "none"; return; }
+      var q = (WetalkLLM.getQuota ? WetalkLLM.getQuota() : null) || {};
+      var limit = (typeof q.limit === "number" && q.limit > 0) ? q.limit : 20;
+      var remaining = (typeof q.remaining === "number") ? q.remaining : limit;
+      el.textContent = "AI included with your account - " + remaining + " of " + limit + " requests left today";
+      el.style.display = "";
+    }
+
+    window.addEventListener("wetalk:ai", updateQuotaHint);
+    window.addEventListener("wetalk:ai-error", function (e) {
+      updateQuotaHint();
+      if (e.detail && e.detail.code === "quota_exceeded") {
+        toast("Daily AI limit reached - using an offline plan.");
+      }
+    });
+    if (WetalkAuth.onChange) {
+      try { WetalkAuth.onChange(function () { updateQuotaHint(); }); } catch (e) {}
+    }
+    updateQuotaHint();
 
     function daysUntil() {
       var dateVal = document.getElementById("dateInput").value;
@@ -178,6 +215,7 @@
       document.getElementById("finishTodayBtn").style.display = "";
       try { localStorage.setItem("wetalk.schedule", JSON.stringify({ title: title, days: days })); } catch (e) {}
       try { WetalkWorks.archive(); } catch (e) {}
+      updateQuotaHint();
     }
 
     // ---------- PowerPoint ----------
