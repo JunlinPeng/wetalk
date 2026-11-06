@@ -74,12 +74,12 @@ comment on table public.ai_usage is 'Per-user, per-day AI request/token counters
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
-as $
+as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists profiles_set_updated_at on public.profiles;
 create trigger profiles_set_updated_at
@@ -91,7 +91,7 @@ create trigger profiles_set_updated_at
 create or replace function public.set_works_updated_at()
 returns trigger
 language plpgsql
-as $
+as $$
 begin
   if new.updated_at is null then
     new.updated_at = now();
@@ -100,7 +100,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists works_set_updated_at on public.works;
 create trigger works_set_updated_at
