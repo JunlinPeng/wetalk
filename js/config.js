@@ -15,8 +15,8 @@ window.WETALK_CONFIG = {
   supabaseUrl: "https://efhprhfonzgmpwzkzjup.supabase.co",
   // Public "publishable" / anon key from Supabase Project Settings > API
   supabaseAnonKey: "sb_publishable_RmgoWbrsIOGNI944m58Kiw_SrrmKyEn",
-  // Deployed AI feedback Edge Function URL (empty until the proxy is deployed)
-  aiProxyUrl: "",
+  // Deployed AI feedback Edge Function URL (deployed 2026-11-07)
+  aiProxyUrl: "https://efhprhfonzgmpwzkzjup.supabase.co/functions/v1/ai-feedback",
   // Optional canonical site URL used for auth redirects.
   // Defaults to the page origin at runtime.
   siteUrl: ""
