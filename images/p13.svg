@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="sky13" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bde0fe"/><stop offset="1" stop-color="#f4f1de"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sky13)"/>
+  <circle cx="660" cy="110" r="46" fill="#f7b267"/>
+  <path d="M0 400 q200 -120 400 -30 q200 90 400 -10 v140 H0z" fill="#81b29a"/>
+  <path d="M0 440 q260 -70 520 0 q160 40 280 10 v50 H0z" fill="#2a9d8f"/>
+  <rect x="196" y="200" width="12" height="190" fill="#3d405b"/>
+  <g stroke="#3d405b" stroke-width="12" stroke-linecap="round">
+    <line x1="202" y1="200" x2="202" y2="120"/>
+    <line x1="202" y1="200" x2="130" y2="240"/>
+    <line x1="202" y1="200" x2="274" y2="240"/>
+  </g>
+  <circle cx="202" cy="200" r="14" fill="#e07a5f"/>
+  <rect x="446" y="240" width="10" height="150" fill="#3d405b"/>
+  <g stroke="#3d405b" stroke-width="10" stroke-linecap="round">
+    <line x1="451" y1="240" x2="451" y2="172"/>
+    <line x1="451" y1="240" x2="392" y2="272"/>
+    <line x1="451" y1="240" x2="510" y2="272"/>
+  </g>
+  <circle cx="451" cy="240" r="12" fill="#e07a5f"/>
+  <polygon points="580,370 720,370 700,410 560,410" fill="#3d405b"/>
+  <line x1="600" y1="410" x2="595" y2="445" stroke="#3d405b" stroke-width="8"/>
+  <line x1="680" y1="410" x2="685" y2="445" stroke="#3d405b" stroke-width="8"/>
+</svg>

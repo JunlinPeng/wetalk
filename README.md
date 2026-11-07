@@ -1,103 +1,102 @@
 # Wetalk
 
-Wetalk is an AI speech coach for students. Write or generate a natural speech,
-turn your deadline into a day-by-day practice plan, rehearse with timers, and get
-AI feedback scored on organisation, analysis, delivery and creativity. It also
-includes an NSDA-style Impromptu trainer (draw 3 prompts, 7-minute round).
+Wetalk is an AI speech-practice web app for students. It has three practice
+modes - Impromptu Speech, Vericant Interview and TOEFL Oral Preparation - with
+timers, live speech transcription where the browser supports it, rubric-based
+scores and an AI examiner for feedback. Every finished session is saved to a
+cloud-synced 'Previous Work' sidebar on the left.
 
-**Live site:** <https://junlinpeng.github.io/wetalk/> — connected to Supabase, so sign-ups are real accounts.
+**Live site:** <https://junlinpeng.github.io/wetalk/>
 
-## Features
+## Practice modes
 
-- **I have a topic** - AI-written speech or write it yourself, then a
-  personalised schedule and daily check-ins.
-- **I don't have a topic** - draw three NSDA-style prompts and run a full
-  impromptu round with preparation/speaking timers and scoring.
-- **AI feedback** - organisation, analysis, delivery and creativity, with
-  concrete fixes instead of vague praise.
-- **Previous works** - every speech, plan and score is saved so you can pick up
-  where you left off.
-- **AI included** - the live site runs a server-side AI proxy, so signed-in
-  users get AI features with no API key of their own (20 requests per user per
-  day, plus a site-wide daily cap). They can still bring their own
-  OpenAI-compatible key, and every AI step has an offline fallback.
-
-## Run locally
-
-No build step - plain HTML/CSS/JS. Serve the folder over HTTP:
-
-```bash
-python -m http.server 8080      # open http://localhost:8080/
-# or
-powershell -File scripts/serve.ps1
-```
+- **Impromptu Speech** - draw an NSDA-style topic (12 languages, difficulty and
+  subject-field filters), prepare and speak under the 7:00 clock with a 30-second
+  grace, then get scored on organisation, analysis, delivery and creativity.
+- **Vericant Interview** - the five-section K-12 admissions interview flow with
+  questions read aloud one at a time, per-section timers, transcripts and an SEE
+  (SEE) rubric score out of 6 with AI examiner feedback.
+- **TOEFL Oral Preparation** - official TOEFL Speaking question sets (four
+  questions each, 45 seconds per answer) scored on Delivery, Language Use and
+  Topic Development, with AI examiner feedback.
+- **Previous Work** - every finished session (prompt, scores, transcript, tips,
+  AI feedback) is stored in the account's cloud history and can be reopened or
+  deleted from the sidebar.
 
 ## Accounts and data
 
 The live site is connected to a Supabase project: sign-up/sign-in are real
-(email + password; Google/GitHub OAuth can be enabled later), saved works sync
-to the account, and all rows are protected by row-level security in Postgres.
+(email + password, and GitHub sign-in when the provider is enabled), practice
+history syncs to the account, and every row is protected by row-level security.
 The browser only ever holds the public publishable/anon key.
 
+AI feedback is included with the account through a Supabase Edge Function proxy
+(DeepSeek server-side, no user API key) with a daily allowance (20 requests per
+user per day and a global 500/day cap). Rule-based coaching tips always work,
+even when AI is unavailable.
+
 If you fork the repository without configuring Supabase, the app automatically
-runs in **Preview mode** instead: accounts and saved works stay in each
-visitor's browser (a slim banner says so), so the site still works end-to-end
-before any backend exists.
+runs in **Preview mode**: accounts and history stay in the browser and a slim
+banner says so, so the site still works end-to-end before a backend exists.
 
-To connect your own free Supabase project (about 5 minutes), follow
+Setup guides:
 
-1. Follow **[docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)** (about 5 minutes).
-2. Optionally deploy the AI proxy: **[docs/AI_PROXY_SETUP.md](docs/AI_PROXY_SETUP.md)**.
-3. Paste the values into `js/config.js` - or run:
+- [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) - connect a free Supabase project.
+- [docs/AI_PROXY_SETUP.md](docs/AI_PROXY_SETUP.md) - deploy the included AI proxy.
+- [docs/OPTIONAL_SETUP.md](docs/OPTIONAL_SETUP.md) - OAuth, custom email, domain.
 
-   ```powershell
-   powershell -File scripts/configure_supabase.ps1 -SupabaseUrl https://<project-ref>.supabase.co -AnonKey <public-anon-key> -AiProxyUrl https://<project-ref>.supabase.co/functions/v1/ai-feedback -Push
-   ```
+## Run locally
 
-Only public values go in `js/config.js`; the `service_role` key and the
-DeepSeek key stay server-side as Supabase secrets.
+No build step - plain HTML/CSS/JS. Serve the folder over HTTP so Web Speech and
+localStorage behave correctly:
 
-## Deploy
-
-GitHub Pages serves the `main` branch directly (legacy branch source, repo
-root). `.nojekyll` keeps Pages from running Jekyll. Push to `main` and the site
-redeploys automatically - no Actions workflow or extra token scope required.
-
-```powershell
-powershell -File scripts/verify_live.ps1   # smoke-test the deployed site
+```bash
+python -m http.server 8080
+# open http://localhost:8080/ (landing) or http://localhost:8080/app.html
 ```
+
+`app.html` is the practice workspace and requires a signed-in account (use
+Preview mode, or connect Supabase as above).
 
 ## Project layout
 
 ```
 index.html              marketing landing page
-signup.html signin.html signup/reset pages (real Supabase auth or Preview mode)
-app.html                signed-in dashboard
-works.html              previous works
-topic.html              I have a topic
-script.html             speech editor / AI generation
-schedule.html           practice plan + PowerPoint outline
-checkin.html            daily check-in
-practice.html           rehearsal + AI feedback
-impromptu.html          impromptu round trainer
+app.html                Wetalk v2 practice workspace (the app)
+signup.html signin.html signup / sign-in (Supabase auth)
 reset.html reset-password.html   password reset flow
 404.html                branded not-found page
-css/styles.css          design system (5-colour palette, responsive)
-js/config.js            public runtime config (empty by default = Preview mode)
+v2/                     Wetalk v2 app assets (css + js + data)
+images/                 Vericant / TOEFL topic illustrations
+js/config.js            public runtime config (empty = Preview mode)
 js/auth.js              accounts, session, OAuth, password reset
-js/store.js works.js    cloud/local works sync
-js/llm.js               AI routing: platform proxy -> personal key -> offline
-js/planner.js           schedule + PPT generation
-js/practice.js          practice session + scoring
-js/impromptu.js         impromptu round
-js/topics.js            multilingual impromptu topic bank
-js/ui.js                shared UI helpers (toasts, user chip, transitions)
-js/vendor/supabase.js   pinned supabase-js v2 UMD (2.57.4)
-supabase/schema.sql     profiles / works / ai_usage + RLS + triggers
+js/store.js works.js    legacy cloud/local works sync
+js/llm.js               AI routing: included proxy -> personal key -> offline
+js/ui.js                shared UI helpers (toasts, transitions)
+js/vendor/supabase.js   pinned supabase-js v2 UMD
+v2/js/app.js            practice workspace logic (modes, timers, scoring, history)
+v2/js/v2-ai.js          TOEFL / Vericant examiner prompts through the AI proxy
+v2/js/v2-cloud.js       cloud sync for the Previous Work sidebar
+supabase/schema.sql     profiles / works / sessions tables + RLS
 supabase/functions/     ai-feedback Edge Function (DeepSeek proxy + quota)
-scripts/                serve / configure_supabase / verify_live helpers
-tests/                  dev-only unit + Playwright e2e tests
+supabase/migrations/    incremental SQL migrations
+scripts/                serve / configure_supabase / deploy_ai_proxy / verify_live
+tests/                  dev-only unit + Playwright end-to-end tests
 docs/                   setup, architecture and testing docs
+```
+
+The original prototype pages from the first web version (topic.html, script.html,
+schedule.html, practice.html, checkin.html, impromptu.html, works.html) are still
+in the repository but are no longer linked; `app.html` is the product.
+
+## Deploy
+
+GitHub Pages serves the `main` branch directly (legacy branch source, repo root).
+`.nojekyll` keeps Pages from running Jekyll. Push to `main` and the site redeploys
+automatically.
+
+```powershell
+powershell -File scripts/verify_live.ps1   # smoke-test the deployed site
 ```
 
 ## Tests
@@ -105,21 +104,16 @@ docs/                   setup, architecture and testing docs
 Dev-only tooling; the shipped site stays dependency-free.
 
 ```powershell
-# unit + e2e (needs node + locally installed playwright-core + Microsoft Edge)
+# unit + e2e (needs node, playwright-core and Microsoft Edge)
 node tests/run-all.js
 ```
 
-59 unit tests and about 130 browser checks cover every page, the Preview-mode
-auth flow, link integrity, accessibility smoke checks, responsive layouts
-(390 px / 1440 px) and screenshots. See [docs/TESTING.md](docs/TESTING.md).
+See [docs/TESTING.md](docs/TESTING.md).
 
-## Notes and limitations
+## Notes
 
-- Preview mode accounts are local to one browser. Real accounts require the
-  Supabase setup above.
-- Vericant-style interview and TOEFL speaking modes shown on the landing page
-  are marked 'Coming soon'; the two core modes (topic and impromptu) are fully
-  implemented.
-- AI quality and availability depend on the configured provider (DeepSeek by
-  default in the platform proxy). Every AI step falls back to offline
-  heuristics when no AI is available.
+- Live transcription and text-to-speech use the browser's Web Speech APIs
+  (best in Edge/Chrome). When unavailable, a text box lets you type your answer
+  so you can still practise and get scored.
+- AI feedback needs a signed-in account; the rule-based tips always remain.
+- AI quota resets on the UTC day.

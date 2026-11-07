@@ -210,7 +210,7 @@
   // Only allow same-site relative pages in ?next= (no open redirects).
   function safeNext(value, fallback) {
     var target = trim(value);
-    var fallbackTarget = fallback || "works.html";
+    var fallbackTarget = fallback || "app.html";
     if (!target) return fallbackTarget;
     if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(target)) return fallbackTarget;
     if (target.indexOf("//") === 0) return fallbackTarget;
@@ -808,7 +808,7 @@
       toast("Google and GitHub sign-in need real accounts (Supabase). In Preview mode, use email sign-up.");
       return;
     }
-    var target = safeNext(nextPage, "works.html");
+    var target = safeNext(nextPage, "app.html");
     var c = getClient();
     if (!c) {
       whenClientReady(function (ready) { startOAuth(ready, name, target); });

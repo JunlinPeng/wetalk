@@ -16,6 +16,7 @@ $pages = @(
     "", "index.html", "signin.html", "signup.html", "app.html", "works.html",
     "topic.html", "script.html", "schedule.html", "practice.html",
     "checkin.html", "impromptu.html", "reset.html", "reset-password.html", "404.html",
+    "v2/js/app.js", "v2/js/v2-ai.js", "v2/js/v2-cloud.js", "v2/css/styles.css", "images/p1.svg",
     "js/config.js", "js/auth.js", "js/store.js", "js/llm.js", "js/ui.js", "css/styles.css"
 )
 

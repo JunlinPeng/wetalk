@@ -3,380 +3,305 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard - Wetalk</title>
-  <meta name="description" content="Your Wetalk dashboard: start a topic or impromptu practice, resume recent works and see today's focus." />
-  <meta name="theme-color" content="#021024" />
+  <title>Wetalk - Practice</title>
+  <meta name="description" content="Wetalk practice workspace: impromptu speech, Vericant interview and TOEFL speaking with AI feedback." />
+  <meta name="theme-color" content="#F7F4EC" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="v2/css/styles.css?v=7" />
+  <style>
+    .sidebar__user{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:8px 0 4px;border-top:1px solid var(--border);}
+    .sidebar__avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:0 0 auto;}
+    .sidebar__user-meta{display:flex;flex-direction:column;min-width:0;flex:1;}
+    .sidebar__user-name{font-size:14px;color:var(--heading);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sidebar__user-sub{font-size:11px;color:var(--muted);}
+    .sidebar__signout{background:none;border:1px solid var(--border-strong);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--accent);cursor:pointer;font-family:inherit;}
+    .sidebar__signout:hover{background:var(--accent-soft);}
+    @media (max-width:900px){.sidebar__user{display:none;}}
+  </style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
-
-  <div class="shell">
-    <header class="shell__bar">
-      <a class="brand" href="index.html" aria-label="Wetalk home">
-        <span class="brand__mark" aria-hidden="true">W</span>
-        <span class="brand__name">Wetalk</span>
-      </a>
-      <div class="shell__user">
-        <a class="btn btn--ghost" href="works.html">All works</a>
-        <div id="userChip"></div>
-      </div>
-    </header>
-
-    <main id="main" class="dash">
-      <div class="dash__head">
-        <div class="dash__id">
-          <span class="avatar avatar--lg" id="dashAvatar" aria-hidden="true">?</span>
-          <div>
-            <p class="eyebrow">Dashboard</p>
-            <h1 class="dash__hello" id="greeting">Welcome back</h1>
-            <p class="dash__sub">What would you like to work on today?</p>
-          </div>
-        </div>
-        <div class="dash__meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="17" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
-          <span id="todayDate">Today</span>
+  <div class="app">
+    <!-- ===================== LEFT SIDEBAR ===================== -->
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <span class="brand-mark">W</span>
+        <div class="brand-text">
+          <div class="brand-name">Wetalk</div>
+          <div class="brand-sub">Speech Practice</div>
         </div>
       </div>
 
-      <section class="dash-stats" aria-label="Quick stats">
-        <div class="stat-tile">
-          <span class="stat-tile__label">Works saved</span>
-          <span class="stat-tile__value" id="statWorks">0</span>
-          <span class="stat-tile__hint" id="statWorksHint">Nothing saved yet</span>
-        </div>
-        <div class="stat-tile">
-          <span class="stat-tile__label">Plan days</span>
-          <span class="stat-tile__value" id="statPlan">0</span>
-          <span class="stat-tile__hint" id="statPlanHint">No plan yet</span>
-        </div>
-        <div class="stat-tile">
-          <span class="stat-tile__label">Last activity</span>
-          <span class="stat-tile__value" id="statLast">-</span>
-          <span class="stat-tile__hint" id="statLastHint">Start your first work</span>
+      <button class="sidebar__new" id="btnNewWork">+ New Practice</button>
+
+      <div class="sidebar__section-title">Previous Work</div>
+      <div class="sidebar__list" id="historyList">
+        <div class="sidebar__empty" id="historyEmpty">No practice yet.<br />Start your first session.</div>
+      </div>
+
+      <div class="sidebar__user" id="v2UserBlock" hidden>
+        <span class="sidebar__avatar" id="v2Avatar">?</span>
+        <span class="sidebar__user-meta">
+          <span class="sidebar__user-name" id="v2Username"></span>
+          <span class="sidebar__user-sub">Cloud sync on</span>
+        </span>
+        <button class="sidebar__signout" id="v2SignOut" type="button">Sign out</button>
+      </div>
+
+      <div class="sidebar__foot">
+        <button class="sidebar__foot-btn" id="btnSettings">⚙ Settings</button>
+        <button class="sidebar__foot-btn" id="btnClearHistory">Clear history</button>
+      </div>
+    </aside>
+
+    <!-- ===================== MAIN ===================== -->
+    <main class="main">
+      <!-- ---------- HOME ---------- -->
+      <section class="view" id="view-home">
+        <header class="home__header">
+          <h1>Welcome to Wetalk</h1>
+          <p class="home__sub">Choose a practice mode to begin.</p>
+        </header>
+        <div class="mode-grid">
+          <button class="mode-card" data-mode="impromptu">
+            <span class="mode-card__icon">🎤</span>
+            <h2>Impromptu Speech</h2>
+            <p>Draw a surprise topic, prepare and speak under the timer, then get scored on organization, analysis, delivery and creativity.</p>
+            <span class="mode-card__go">Start &rarr;</span>
+          </button>
+          <button class="mode-card" data-mode="interview">
+            <span class="mode-card__icon">🎥</span>
+            <h2>Vericant Interview</h2>
+            <p>Simulate the real Vericant admissions interview: 5 sections including a picture task, scored on the SEE rubric (0–6).</p>
+            <span class="mode-card__go">Start &rarr;</span>
+          </button>
+          <button class="mode-card" data-mode="toefl">
+            <span class="mode-card__icon">🗣️</span>
+            <h2>TOEFL Oral Preparation</h2>
+            <p>Four TOEFL questions read aloud one at a time. Answer in 45 seconds each, then get a TOEFL-rubric score and AI feedback.</p>
+            <span class="mode-card__go">Start &rarr;</span>
+          </button>
         </div>
       </section>
 
-      <div class="dash__layout">
-        <div class="dash__main">
-          <section class="panel" aria-labelledby="start-title">
-            <div class="panel__head">
-              <h2 class="panel__title" id="start-title">Start something</h2>
-            </div>
-            <div class="mode-launch-grid">
-              <a class="mode-launch" href="topic.html">
-                <div class="mode-launch__top">
-                  <span class="icon-tile" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
-                    </svg>
-                  </span>
-                  <span class="mode-launch__tag">Option A</span>
-                </div>
-                <h3 class="mode-launch__title">I have a topic</h3>
-                <p class="mode-launch__desc">Enter your topic, get an AI-written or self-written speech, then a practice plan built around your deadline.</p>
-                <span class="mode-launch__go">Start with a topic
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                </span>
-              </a>
-              <a class="mode-launch" href="impromptu.html">
-                <div class="mode-launch__top">
-                  <span class="icon-tile icon-tile--alt" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" /><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor" /><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" /><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor" />
-                    </svg>
-                  </span>
-                  <span class="mode-launch__tag">Option B</span>
-                </div>
-                <h3 class="mode-launch__title">I don't have a topic</h3>
-                <p class="mode-launch__desc">Draw three NSDA-style prompts, run the seven-minute round, and get scored on four criteria.</p>
-                <span class="mode-launch__go">Draw a prompt
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-                </span>
-              </a>
-            </div>
-          </section>
+      <!-- ---------- IMPROMPTU ---------- -->
+      <section class="view" id="view-impromptu" hidden>
+        <header class="view__header">
+          <h1>Impromptu Speech</h1>
+          <p>Set your language, difficulty and subject field, then generate a topic.</p>
+        </header>
 
-          <section class="panel" aria-labelledby="recent-title">
-            <div class="panel__head">
-              <h2 class="panel__title" id="recent-title">Recent works</h2>
-              <a class="panel__link" href="works.html">View all</a>
-            </div>
-            <div class="recent-list" id="recentList" aria-live="polite"></div>
-          </section>
+        <div class="controls">
+          <div class="dropdown" id="ddLang">
+            <button class="dropdown__trigger" id="langTrigger" aria-haspopup="listbox">
+              <span class="dropdown__label"><span class="dropdown__icon" id="langIcon">🌐</span><span id="langValue">English</span></span>
+              <span class="dropdown__caret">▾</span>
+            </button>
+            <div class="dropdown__menu" id="langMenu" role="listbox"></div>
+          </div>
+
+          <div class="dropdown" id="ddDiff">
+            <button class="dropdown__trigger" id="diffTrigger" aria-haspopup="listbox">
+              <span class="dropdown__label"><span class="dropdown__icon" id="diffIcon">🎲</span><span id="diffValue">Random</span></span>
+              <span class="dropdown__caret">▾</span>
+            </button>
+            <div class="dropdown__menu" id="diffMenu" role="listbox"></div>
+          </div>
+
+          <div class="dropdown" id="ddCat">
+            <button class="dropdown__trigger" id="catTrigger" aria-haspopup="listbox">
+              <span class="dropdown__label"><span class="dropdown__icon" id="catIcon">🎯</span><span id="catValue">Random</span></span>
+              <span class="dropdown__caret">▾</span>
+            </button>
+            <div class="dropdown__menu" id="catMenu" role="listbox"></div>
+          </div>
         </div>
 
-        <aside class="dash__aside">
-          <section class="panel focus-panel" aria-labelledby="focus-title">
-            <div class="panel__head">
-              <h2 class="panel__title" id="focus-title">Today's focus</h2>
-            </div>
-            <p class="panel__hint" id="focusArea">One criterion at a time.</p>
-            <div class="tips">
-              <h3>Try this today</h3>
-              <ul id="focusTips"></ul>
-            </div>
-            <div class="focus-actions">
-              <a class="btn btn--primary" href="checkin.html">Open daily check-in</a>
-              <a class="btn btn--secondary" href="practice.html">Practice a segment</a>
-            </div>
-          </section>
-
-          <div class="preview-note" id="previewNote" style="display:none">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" />
-            </svg>
-            <span id="previewNoteText">Preview mode: your account and works are saved in this browser.</span>
+        <div class="topic-stage">
+          <div class="topic-window" id="topicWindow">
+            <div class="topic-text" id="topicText">Your topic will appear here</div>
           </div>
-        </aside>
-      </div>
+          <div class="topic-actions">
+            <button class="btn btn--primary btn--spin" id="btnSpin">🎰 Generate Topic</button>
+          </div>
+        </div>
+        <div class="topic-meta" id="topicMeta"></div>
+        <div class="practice-actions" id="practiceActions" hidden>
+          <button class="btn btn--primary" id="btnBegin">Begin Practice &rarr;</button>
+          <button class="btn btn--ghost" id="btnRespin">New Topic</button>
+        </div>
+      </section>
+
+      <!-- ---------- INTERVIEW (Vericant) ---------- -->
+      <section class="view" id="view-interview" hidden>
+        <header class="view__header">
+          <h1>Vericant Interview</h1>
+          <p>Generate the full 5-section Vericant interview, then walk through it under the timer.</p>
+        </header>
+
+        <div class="topic-stage">
+          <div class="topic-window">
+            <div class="topic-text" id="interviewText">Your 5-section interview will appear here</div>
+          </div>
+          <div class="topic-actions">
+            <button class="btn btn--primary btn--spin" id="btnInterviewSpin">🎰 Generate Interview</button>
+          </div>
+        </div>
+        <div class="framework" id="interviewFramework" hidden></div>
+        <div class="practice-actions" id="interviewActions" hidden>
+          <button class="btn btn--primary" id="btnInterviewBegin">Begin Interview &rarr;</button>
+          <button class="btn btn--ghost" id="btnInterviewRespin">New Interview</button>
+        </div>
+      </section>
+
+      <!-- ---------- TOEFL ---------- -->
+      <section class="view" id="view-toefl" hidden>
+        <header class="view__header">
+          <h1>TOEFL Oral Preparation</h1>
+          <p>Four official TOEFL questions, read aloud one at a time. Listen, answer within 45 seconds, then get a TOEFL-rubric score and AI feedback.</p>
+        </header>
+
+        <div class="topic-stage">
+          <div class="topic-window">
+            <div class="topic-text" id="toeflText">Your TOEFL interview set will appear here</div>
+          </div>
+          <div class="topic-actions">
+            <button class="btn btn--primary btn--spin" id="btnToeflSpin">🎰 Generate Question Set</button>
+          </div>
+        </div>
+        <div class="practice-actions" id="toeflActions" hidden>
+          <button class="btn btn--primary" id="btnToeflBegin">Begin Answering &rarr;</button>
+          <button class="btn btn--ghost" id="btnToeflRespin">New Set</button>
+        </div>
+      </section>
+
+      <!-- ---------- SHARED PRACTICE ---------- -->
+      <section class="view" id="view-practice" hidden>
+        <header class="view__header view__header--compact">
+          <div class="practice__mode" id="practiceModeLabel">Impromptu Speech</div>
+          <div class="practice__step" id="practiceStep" hidden></div>
+          <h1 class="practice__prompt" id="practicePrompt">Topic</h1>
+        </header>
+
+        <div class="practice__images" id="practiceImages" hidden></div>
+
+        <div class="timer-box">
+          <div class="timer__phase" id="timerPhase">Ready</div>
+          <span class="rec-dot" id="recDot" hidden></span>
+          <div class="timer__time" id="timerTime">7:00</div>
+          <div class="timer__hint" id="timerHint">Press &ldquo;Start Prep&rdquo; to begin.</div>
+        </div>
+
+        <div class="practice__controls">
+          <button class="btn btn--primary" id="btnStartPrep">Start Prep</button>
+          <button class="btn btn--primary" id="btnStartSpeaking" hidden>Start Speaking</button>
+          <button class="btn btn--danger" id="btnFinish" hidden>Finish</button>
+          <button class="btn btn--ghost" id="btnReplay" hidden>🔊 Replay question</button>
+        </div>
+
+        <div class="transcript">
+          <div class="transcript__head">
+            <span class="transcript__title">Live transcript</span>
+            <span class="transcript__status" id="transcriptStatus">idle</span>
+          </div>
+          <div class="transcript__box" id="transcriptBox">Your spoken words will appear here as you speak.</div>
+          <textarea class="transcript__manual" id="transcriptManual" placeholder="Live transcription not available here — type what you said instead (optional)." hidden></textarea>
+        </div>
+      </section>
+
+      <!-- ---------- SHARED RESULTS ---------- -->
+      <section class="view" id="view-results" hidden>
+        <header class="view__header">
+          <h1>Results</h1>
+          <p id="resultsPrompt">Your prompt</p>
+        </header>
+
+        <div class="overall">
+          <div class="overall__badge" id="overallBadge">–</div>
+          <div class="overall__label" id="overallLabel">Overall score</div>
+          <div class="overall__meta" id="overallMeta"></div>
+        </div>
+
+        <div class="ai-overall" id="aiOverall" hidden></div>
+
+        <div class="scores" id="scoresList"></div>
+        <div class="tips" id="tipsList"></div>
+
+        <div class="questions" id="questionsList" hidden></div>
+
+        <div class="results__transcript" id="resultsTranscriptWrap">
+          <div class="transcript__title">Your transcript</div>
+          <div class="transcript__box transcript__box--readonly" id="resultsTranscript"></div>
+        </div>
+
+        <div class="results__actions">
+          <button class="btn btn--primary" id="btnSave">Save to My Work</button>
+          <button class="btn btn--ghost" id="btnAgain">Practice Again</button>
+          <button class="btn btn--ghost" id="btnHome">Back to Home</button>
+        </div>
+      </section>
+
+      <!-- ---------- HISTORY DETAIL ---------- -->
+      <section class="view" id="view-history" hidden>
+        <header class="view__header">
+          <h1 id="historyTitle">Session</h1>
+          <p id="historySub"></p>
+        </header>
+        <div class="history-detail" id="historyDetail"></div>
+        <div class="results__actions">
+          <button class="btn btn--ghost" id="btnHistoryBack">&larr; Back</button>
+          <button class="btn btn--danger" id="btnHistoryDelete">Delete</button>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <!-- ===================== SETTINGS MODAL ===================== -->
+  <div class="modal" id="settingsModal" hidden>
+    <div class="modal__card">
+      <h2 class="modal__title">Settings</h2>
+      <p class="modal__hint" id="aiStatus" style="margin-bottom:10px">
+        AI feedback status is loading...
+      </p>
+      <p class="modal__hint">
+        AI feedback is included with your Wetalk account, and your previous work is
+        synced to it. Rule-based coaching tips always work, even without AI.
+      </p>
+      <div class="modal__actions">
+        <button class="btn btn--ghost" id="btnSettingsSave">Done</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/config.js"></script>
   <script src="js/vendor/supabase.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/works.js"></script>
+  <script>
+    // The practice workspace is for signed-in accounts only.
+    if (!WetalkAuth.requireAuth()) { document.documentElement.style.display = "none"; }
+  </script>
+  <script src="js/llm.js"></script>
   <script src="js/ui.js"></script>
+  <script src="v2/js/data.js?v=7"></script>
+  <script src="v2/js/topics.js?v=7"></script>
+  <script src="v2/js/v2-ai.js?v=1"></script>
+  <script src="v2/js/v2-cloud.js?v=1"></script>
+  <script src="v2/js/app.js?v=9"></script>
   <script>
     (function () {
       "use strict";
-
-      var ui = window.WetalkUI;
-      var auth = window.WetalkAuth;
-
-      // Auth guard. requireAuth() is synchronous and redirects to
-      // signin.html?next=app.html when the visitor is signed out. Guard the
-      // call so a broken/missing auth module can never blank the dashboard.
-      if (auth && typeof auth.requireAuth === "function") {
-        var allowed = true;
-        try { allowed = auth.requireAuth() !== false; } catch (e) { allowed = true; }
-        if (!allowed) return;
-      }
-
-      var $ = function (id) { return document.getElementById(id); };
-      var esc = ui ? ui.escapeHtml : function (s) { return String(s == null ? "" : s); };
-
-      var session = null;
-      try { session = ui ? ui.getSession() : (auth && auth.getSession ? auth.getSession() : null); } catch (e) { session = null; }
-      var name = ui ? ui.displayName(session) : ((session && session.username) || "there");
-
-      // ---------- greeting + date ----------
-      var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-      var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-      function greetingWord(hour) {
-        if (hour < 12) return "Good morning";
-        if (hour < 18) return "Good afternoon";
-        return "Good evening";
-      }
-
-      var now = new Date();
-      var greetingEl = $("greeting");
-      if (greetingEl) greetingEl.textContent = greetingWord(now.getHours()) + ", " + name;
-      var dateEl = $("todayDate");
-      if (dateEl) {
-        dateEl.textContent = WEEKDAYS[now.getDay()] + ", " + MONTHS[now.getMonth()] + " " + now.getDate();
-      }
-      var avatarEl = $("dashAvatar");
-      if (avatarEl) avatarEl.textContent = ui ? ui.initials(name) : String(name).charAt(0).toUpperCase();
-
-      // ---------- header user chip (avatar + username + sign out) ----------
-      // WetalkUI.mountUserChip() renders only when a session exists and falls
-      // back to a Sign in link otherwise; it never throws.
-      function renderUserChip() {
-        var host = $("userChip");
-        if (!host || !ui || typeof ui.mountUserChip !== "function") return;
-        try { ui.mountUserChip(host); } catch (e) { /* header stays usable */ }
-      }
-
-      // ---------- stats ----------
-      function readWorks() {
-        try {
-          if (window.WetalkWorks && typeof window.WetalkWorks.getWorks === "function") {
-            var list = window.WetalkWorks.getWorks();
-            return Array.isArray(list) ? list : [];
-          }
-        } catch (e) { /* ignore */ }
-        try {
-          var raw = JSON.parse(localStorage.getItem("wetalk.works") || "[]");
-          return Array.isArray(raw) ? raw : [];
-        } catch (e) { return []; }
-      }
-
-      function readPlanDays() {
-        try {
-          var plan = JSON.parse(localStorage.getItem("wetalk.schedule") || "null");
-          return plan && plan.days && plan.days.length ? plan.days.length : 0;
-        } catch (e) { return 0; }
-      }
-
-      function updateStats(works) {
-        var days = readPlanDays();
-        var sorted = works.slice().sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
-        var latest = sorted[0] || null;
-
-        if ($("statWorks")) $("statWorks").textContent = String(works.length);
-        if ($("statWorksHint")) $("statWorksHint").textContent = works.length ? "Saved in your works list" : "Nothing saved yet";
-        if ($("statPlan")) $("statPlan").textContent = String(days);
-        if ($("statPlanHint")) $("statPlanHint").textContent = days ? "Days in your current plan" : "No plan yet";
-        if ($("statLast")) $("statLast").textContent = latest ? (ui ? ui.relativeTime(latest.updatedAt) : "") : "-";
-        if ($("statLastHint")) $("statLastHint").textContent = latest && latest.title ? latest.title : "Start your first work";
-      }
-
-      // ---------- recent works ----------
-      var FOLDER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /></svg>';
-
-      function workDestination(work) {
-        if (!work) return "script.html";
-        var hasSchedule = work.schedule && work.schedule.days && work.schedule.days.length;
-        return (work.speech || hasSchedule) ? "schedule.html" : "script.html";
-      }
-
-      function workMeta(work) {
-        var bits = [];
-        var hasSchedule = work.schedule && work.schedule.days && work.schedule.days.length;
-        if (work.speech) bits.push("Has speech");
-        if (hasSchedule) bits.push(work.schedule.days.length + " days planned");
-        if (work.updatedAt) bits.push(ui ? ui.relativeTime(work.updatedAt) : new Date(work.updatedAt).toLocaleDateString());
-        return bits.join(" - ");
-      }
-
-      function openWork(work) {
-        try {
-          if (window.WetalkWorks && typeof window.WetalkWorks.resume === "function") window.WetalkWorks.resume(work);
-        } catch (e) { /* ignore */ }
-        location.href = workDestination(work);
-      }
-
-      function renderWorks() {
-        var host = $("recentList");
-        if (!host) return;
-        var works = readWorks();
-        var sorted = works.slice().sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
-        var recent = sorted.slice(0, 4);
-
-        host.innerHTML = "";
-
-        if (!recent.length) {
-          var empty = document.createElement("div");
-          empty.className = "empty-state";
-          empty.innerHTML =
-            '<span class="empty-state__icon">' + FOLDER_ICON + "</span>" +
-            '<p class="empty-state__title">No works yet</p>' +
-            '<p class="empty-state__text">Start with a topic or draw an impromptu prompt. Your speech, plan and feedback are saved here automatically.</p>' +
-            '<a class="btn btn--primary btn--sm" href="topic.html">Start your first work</a>';
-          host.appendChild(empty);
-        } else {
-          recent.forEach(function (work) {
-            var title = work.title || "(untitled work)";
-            var card = document.createElement("div");
-            card.className = "work-card";
-            card.setAttribute("role", "button");
-            card.setAttribute("tabindex", "0");
-            card.setAttribute("aria-label", "Resume " + title);
-            card.innerHTML =
-              '<div class="work-card__info">' +
-                '<div class="work-card__title">' + esc(title) + "</div>" +
-                '<div class="work-card__meta">' + esc(workMeta(work)) + "</div>" +
-              "</div>" +
-              '<span class="work-card__resume">Resume</span>';
-            card.addEventListener("click", function () { openWork(work); });
-            card.addEventListener("keydown", function (e) {
-              if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
-                e.preventDefault();
-                openWork(work);
-              }
-            });
-            host.appendChild(card);
-          });
-        }
-
-        updateStats(works);
-      }
-
-      // ---------- today's focus ----------
-      var FOCUS = [
-        {
-          area: "Organisation",
-          tip: "Say your thesis in one sentence before any detail. If the audience remembers one line, make it that one.",
-          drill: "Write your opening and close first, then fill the middle. The structure gets clearer immediately."
-        },
-        {
-          area: "Analysis",
-          tip: "After every claim, add a because and one concrete example. Two supported points beat five shallow ones.",
-          drill: "Pick your weakest body paragraph and add one real example to it before your next run."
-        },
-        {
-          area: "Delivery",
-          tip: "Record one paragraph, then repeat it about 10 percent slower. Pauses read as control, not as forgetting.",
-          drill: "Mark three places in your speech where you will deliberately pause for a breath."
-        },
-        {
-          area: "Creativity",
-          tip: "Find one image or short story that only you could tell, and place it right after your opening.",
-          drill: "Replace your first generic sentence with a specific moment, image or number."
-        }
-      ];
-
-      function renderFocus() {
-        var focus = FOCUS[Math.floor(Date.now() / 86400000) % FOCUS.length];
-        if ($("focusArea")) $("focusArea").textContent = "Today's criterion: " + focus.area;
-        var list = $("focusTips");
-        if (!list) return;
-        list.innerHTML = "";
-        [focus.tip, focus.drill].forEach(function (text) {
-          var li = document.createElement("li");
-          li.textContent = text;
-          list.appendChild(li);
-        });
-      }
-
-      // ---------- mode note ----------
-      function renderModeNote() {
-        var note = $("previewNote");
-        var text = $("previewNoteText");
-        if (!note || !text) return;
-        if (ui && ui.isPreview()) {
-          text.textContent = "Preview mode: your account and works are saved in this browser.";
-          note.style.display = "";
-          return;
-        }
-        var cloudEnabled = false;
-        try { cloudEnabled = !!(window.WetalkStore && window.WetalkStore.enabled); } catch (e) { cloudEnabled = false; }
-        if (cloudEnabled) {
-          text.textContent = "Synced: your works are backed up to your account.";
-          note.style.display = "";
-        }
-      }
-
-      // ---------- boot ----------
-      renderUserChip();
-      renderFocus();
-      renderWorks();
-      renderModeNote();
-
-      window.addEventListener("wetalk:works", renderWorks);
-      if (window.WetalkWorks && typeof window.WetalkWorks.refresh === "function") {
-        try {
-          var pending = window.WetalkWorks.refresh();
-          if (pending && typeof pending.catch === "function") pending.catch(function () {});
-        } catch (e) { /* offline is fine */ }
-      }
-      if (auth && typeof auth.onChange === "function") {
-        try {
-          auth.onChange(function () {
-            renderUserChip();
-            renderWorks();
-            renderModeNote();
-          });
-        } catch (e) { /* ignore */ }
-      }
+      try {
+        var session = window.WetalkAuth && WetalkAuth.getSession ? WetalkAuth.getSession() : null;
+        if (!session) return;
+        var name = session.username || session.email || "Account";
+        var avatar = document.getElementById("v2Avatar");
+        var label = document.getElementById("v2Username");
+        var block = document.getElementById("v2UserBlock");
+        if (avatar) avatar.textContent = name.charAt(0).toUpperCase();
+        if (label) label.textContent = name;
+        if (block) block.hidden = false;
+        var out = document.getElementById("v2SignOut");
+        if (out) out.addEventListener("click", function () { WetalkAuth.signOut(); });
+      } catch (e) { /* signed-out visitors are redirected above */ }
     })();
   </script>
 </body>

@@ -79,10 +79,21 @@
     </div>
   </main>
 
-  <script src="js/config.js"></script>
+<script src="js/config.js"></script>
   <script src="js/vendor/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script>
+    // auto-forward-if-signed-in: returning users go straight to the app.
+    (function () {
+      try {
+        if (window.WetalkAuth && WetalkAuth.getSession && WetalkAuth.getSession()) {
+          var q = new URLSearchParams(location.search);
+          if (!q.get("oauth") && !q.get("confirmed")) { location.replace("app.html"); return; }
+        }
+      } catch (e) {}
+    })();
+  </script>
+    <script>
     (function () {
       "use strict";
 
@@ -161,7 +172,7 @@
               showSuccess(email.toLowerCase());
               return;
             }
-            window.location.replace("works.html");
+            window.location.replace("app.html");
           })
           .catch(function () {
             setBusy(false);
@@ -170,10 +181,10 @@
       });
 
       document.getElementById("googleBtn").addEventListener("click", function () {
-        WetalkAuth.oauthSignIn("google", "works.html");
+        WetalkAuth.oauthSignIn("google", "app.html");
       });
       document.getElementById("githubBtn").addEventListener("click", function () {
-        WetalkAuth.oauthSignIn("github", "works.html");
+        WetalkAuth.oauthSignIn("github", "app.html");
       });
     })();
   </script>

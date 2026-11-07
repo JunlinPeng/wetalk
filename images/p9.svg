@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <rect width="800" height="500" fill="#fef0db"/>
+  <g>
+    <line x1="120" y1="0" x2="100" y2="140" stroke="#e76f51" stroke-width="3"/>
+    <ellipse cx="100" cy="160" rx="30" ry="36" fill="#e63946"/>
+    <line x1="360" y1="0" x2="360" y2="120" stroke="#e76f51" stroke-width="3"/>
+    <ellipse cx="360" cy="140" rx="26" ry="32" fill="#457b9d"/>
+    <line x1="600" y1="0" x2="610" y2="130" stroke="#e76f51" stroke-width="3"/>
+    <ellipse cx="610" cy="150" rx="28" ry="34" fill="#f4a261"/>
+    <line x1="720" y1="0" x2="700" y2="150" stroke="#e76f51" stroke-width="3"/>
+    <ellipse cx="700" cy="170" rx="24" ry="30" fill="#2a9d8f"/>
+  </g>
+  <rect x="300" y="360" width="200" height="40" fill="#c9ada7" rx="4"/>
+  <rect x="300" y="360" width="200" height="10" fill="#8a5a44"/>
+  <rect x="330" y="300" width="140" height="60" fill="#ffb703"/>
+  <rect x="330" y="300" width="140" height="14" fill="#fdf0d5"/>
+  <g stroke="#d00000" stroke-width="4" stroke-linecap="round">
+    <line x1="360" y1="300" x2="360" y2="278"/><line x1="390" y1="300" x2="390" y2="276"/><line x1="420" y1="300" x2="420" y2="278"/><line x1="450" y1="300" x2="450" y2="276"/>
+  </g>
+  <g fill="#ffdd57">
+    <circle cx="360" cy="274" r="5"/><circle cx="390" cy="272" r="5"/><circle cx="420" cy="274" r="5"/><circle cx="450" cy="272" r="5"/>
+  </g>
+  <rect x="140" y="360" width="90" height="70" fill="#6a994e" rx="4"/>
+  <rect x="140" y="360" width="90" height="10" fill="#386641"/>
+  <line x1="185" y1="360" x2="185" y2="430" stroke="#fdf0d5" stroke-width="4"/>
+  <rect x="0" y="440" width="800" height="60" fill="#e9c46a"/>
+</svg>
