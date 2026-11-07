@@ -7,6 +7,10 @@ Everything here is optional. The site is already live with real accounts
 
 ## 1. Included AI for every signed-in user
 
+> **Status on the live project: deployed 2026-11-07.** The function is live with
+> `DAILY_AI_LIMIT=20` and `GLOBAL_DAILY_LIMIT=500`. The steps below are kept for
+> forks / re-deployments.
+
 The \`ai-feedback\` Edge Function keeps your AI provider key server-side and gives
 each signed-in user a small daily allowance, so visitors do not need their own
 API key.
@@ -116,8 +120,14 @@ Steps once the domain is approved:
 3. Update Supabase Auth URLs (Site URL + redirect list) with
    \`scripts/configure_auth.ps1 -SiteUrl https://wetalk.is-a.dev/\`.
 
-Eligibility note: is-a.dev requires the site to be a non-commercial,
-software-development-related project and explicitly refuses AI chatbots/agents.
-Wetalk is an open-source speech-practice app, so the request is a judgement call
-for the maintainers. If rejected, alternatives are a purchased domain (best
-long-term) or a free DNS provider such as DuckDNS.
+Status: the is-a.dev application (PR #60271) was **denied** because the site is
+not considered software-development-related. Alternatives:
+
+1. **GitHub Student Developer Pack** - if you have a verified student account,
+   claim the free Namecheap `.me` domain (or a `.tech` domain) and point it at
+   GitHub Pages. Recommended if eligible.
+2. **Buy a domain** (about USD 10-15/year) - best long-term, and it also makes
+   custom email (Resend) possible.
+3. **Cloudflare Pages / Netlify / Vercel free subdomain** (`wetalk.pages.dev`
+   etc.) - requires an account and deploying the static site there.
+4. Stay on `junlinpeng.github.io/wetalk/`.

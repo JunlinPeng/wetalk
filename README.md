@@ -17,10 +17,10 @@ includes an NSDA-style Impromptu trainer (draw 3 prompts, 7-minute round).
   concrete fixes instead of vague praise.
 - **Previous works** - every speech, plan and score is saved so you can pick up
   where you left off.
-- **AI included** - when the server-side AI proxy is configured, signed-in users
-  get AI features with no API key of their own (daily quota); otherwise they can
-  bring their own OpenAI-compatible key and every AI step has an offline
-  fallback.
+- **AI included** - the live site runs a server-side AI proxy, so signed-in
+  users get AI features with no API key of their own (20 requests per user per
+  day, plus a site-wide daily cap). They can still bring their own
+  OpenAI-compatible key, and every AI step has an offline fallback.
 
 ## Run locally
 
