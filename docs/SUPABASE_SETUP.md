@@ -67,7 +67,8 @@ The script creates:
 | Table | What it stores |
 | --- | --- |
 | `public.profiles` | one row per account: `username` (unique), `email`, timestamps |
-| `public.works` | saved speeches / schedules: `id`, `user_id`, `title`, `mode`, `speech`, `schedule` (jsonb), `updated_at` |
+| `public.works` | legacy saved scripts / schedules from the first prototype: `id`, `user_id`, `title`, `mode`, `speech`, `schedule` (jsonb), `updated_at` |
+| `public.sessions` | Wetalk v2 practice history: `id`, `user_id`, `mode`, `title`, `started_at`, `payload` (jsonb, the full session), timestamps |
 | `public.ai_usage` | per-user, per-day AI quota counters (`requests`, `tokens`) |
 
 It also installs:
@@ -82,6 +83,10 @@ It also installs:
 
 The script is **safe to re-run**: it uses `if not exists` /
 `create or replace` and drops each trigger and policy before recreating it.
+
+Existing projects that already ran an older `schema.sql` only need the extra
+migration: `supabase/migrations/20261107_sessions.sql` (adds the v2
+`public.sessions` table + RLS).
 Re-run it after pulling a newer version of `schema.sql`.
 
 ---
