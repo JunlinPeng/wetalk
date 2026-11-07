@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wetalk - practice out loud, score on the real rubric</title>
   <meta name="description" content="Wetalk is a browser-based practice workspace: impromptu speeches under a 7:00 timer, the five-section Vericant interview and TOEFL speaking questions. Every round is timed, scored on its official rubric and saved with AI examiner feedback." />
-  <meta name="theme-color" content="#021024" />
+  <meta name="theme-color" content="#F7F4EC" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Wetalk - practice out loud, score on the real rubric" />
   <meta property="og:description" content="Impromptu Speech, Vericant Interview and TOEFL Oral Preparation in one workspace: real timers, rubric scores, AI examiner feedback and cloud-saved history." />
@@ -13,11 +13,7 @@
   <meta name="twitter:card" content="summary" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="css/styles.css" />
-  <style>
-    /* The landing page has three mode cards, so keep the shared grid balanced at wide widths. */
-    @media (min-width: 1080px){ .mode-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
-  </style>
+  <link rel="stylesheet" href="css/light.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -65,41 +61,73 @@
         </div>
 
         <div class="hero__visual">
-          <div class="mock" role="img" aria-label="Preview of the Wetalk practice workspace: an Impromptu Speech round with a seven-minute timer, a generated topic, an overall score of 4.2 out of 5 and individual scores for organisation, analysis, delivery and creativity.">
+          <div class="mock" role="img" aria-label="Preview of the Wetalk workspace: a cream sidebar lists previous practice sessions, and an Impromptu Speech round shows a seven-minute timer, an NSDA topic, an overall score of 4.2 out of 5 and scores for organisation, analysis, delivery and creativity.">
             <div class="mock__chrome">
               <span class="mock__dots" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="mock__addr">wetalk.app / practice</span>
               <span class="mock__tag">AI examiner</span>
             </div>
-            <div class="mock__screen">
-              <div class="mock__head">
-                <div>
-                  <div class="mock__hello">Impromptu Speech</div>
-                  <div class="mock__sub">NSDA topic - &ldquo;What makes a good leader?&rdquo;</div>
+            <div class="mock__app">
+              <div class="mock__side" aria-hidden="true">
+                <div class="mock__side-brand">
+                  <span class="mock__mark">W</span>
+                  <span class="mock__side-name"><b>Wetalk</b><small>Speech practice</small></span>
                 </div>
-                <div class="mock__timer">07:00</div>
+                <div class="mock__new">+ New practice</div>
+                <div class="mock__side-label">Previous work</div>
+                <div class="mock__history">
+                  <div class="mock__history-item is-active">
+                    <span class="mock__history-title">Impromptu - Leadership</span>
+                    <span class="mock__history-meta">Today <em>4.2</em></span>
+                  </div>
+                  <div class="mock__history-item">
+                    <span class="mock__history-title">Vericant - Picture task</span>
+                    <span class="mock__history-meta">Yesterday <em>5.0</em></span>
+                  </div>
+                  <div class="mock__history-item">
+                    <span class="mock__history-title">TOEFL - Campus life</span>
+                    <span class="mock__history-meta">2 days ago <em>3.8</em></span>
+                  </div>
+                </div>
+                <div class="mock__side-user">
+                  <span class="mock__avatar">J</span>
+                  <span class="mock__side-name"><b>jun_lin</b><small>Cloud sync on</small></span>
+                </div>
               </div>
-              <div class="mock__panels">
-                <div class="mock__card">
-                  <div class="mock__label">Round</div>
-                  <div class="mock__value">Speaking out loud</div>
-                  <div class="mock__track"><span class="mock__fill" style="width:72%"></span></div>
-                  <div class="mock__meta">7:00 clock - 4 criteria scored</div>
+              <div class="mock__main" aria-hidden="true">
+                <div class="mock__head">
+                  <div>
+                    <div class="mock__hello">Impromptu Speech</div>
+                    <div class="mock__sub">NSDA topic - &ldquo;What makes a good leader?&rdquo;</div>
+                  </div>
+                  <div class="mock__timer">07:00</div>
                 </div>
-                <div class="mock__score">
-                  <svg class="mock__ring" viewBox="0 0 80 80" aria-hidden="true">
-                    <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(84,131,179,0.25)" stroke-width="7" />
-                    <circle cx="40" cy="40" r="34" fill="none" stroke="#C1E8FF" stroke-width="7" stroke-linecap="round" stroke-dasharray="179 214" transform="rotate(-90 40 40)" />
-                  </svg>
-                  <span class="mock__score-num">4.2</span>
-                  <span class="mock__score-cap">Overall / 5</span>
+                <div class="mock__panels">
+                  <div class="mock__card">
+                    <div class="mock__label">Round</div>
+                    <div class="mock__value">Speaking out loud</div>
+                    <div class="mock__track"><span class="mock__fill" style="width:72%"></span></div>
+                    <div class="mock__meta">7:00 clock - 4 criteria scored</div>
+                  </div>
+                  <div class="mock__score">
+                    <svg class="mock__ring" viewBox="0 0 80 80" aria-hidden="true">
+                      <circle class="mock__ring-track" cx="40" cy="40" r="34" fill="none" stroke-width="7" />
+                      <circle class="mock__ring-fill" cx="40" cy="40" r="34" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="179 214" transform="rotate(-90 40 40)" />
+                    </svg>
+                    <span class="mock__score-num">4.2</span>
+                    <span class="mock__score-cap">Overall / 5</span>
+                  </div>
                 </div>
-              </div>
-              <div class="mock__criteria">
-                <div class="mock__criterion"><b>Organisation</b><span class="mock__track"><span class="mock__fill" style="width:90%"></span></span><em>4.5</em></div>
-                <div class="mock__criterion"><b>Analysis</b><span class="mock__track"><span class="mock__fill" style="width:80%"></span></span><em>4.0</em></div>
-                <div class="mock__criterion"><b>Delivery</b><span class="mock__track"><span class="mock__fill" style="width:76%"></span></span><em>3.8</em></div>
-                <div class="mock__criterion"><b>Creativity</b><span class="mock__track"><span class="mock__fill" style="width:84%"></span></span><em>4.2</em></div>
+                <div class="mock__criteria">
+                  <div class="mock__criterion"><b>Organisation</b><span class="mock__track"><span class="mock__fill" style="width:90%"></span></span><em>4.5</em></div>
+                  <div class="mock__criterion"><b>Analysis</b><span class="mock__track"><span class="mock__fill" style="width:80%"></span></span><em>4.0</em></div>
+                  <div class="mock__criterion"><b>Delivery</b><span class="mock__track"><span class="mock__fill" style="width:76%"></span></span><em>3.8</em></div>
+                  <div class="mock__criterion"><b>Creativity</b><span class="mock__track"><span class="mock__fill" style="width:84%"></span></span><em>4.2</em></div>
+                </div>
+                <div class="mock__actions">
+                  <span class="mock__btn mock__btn--primary">Begin practice &rarr;</span>
+                  <span class="mock__btn">New topic</span>
+                </div>
               </div>
             </div>
           </div>
