@@ -39,6 +39,10 @@ supabase secrets set DEEPSEEK_API_KEY=sk-your-deepseek-key
 
 # Optional: daily requests per user, default 20
 supabase secrets set DAILY_AI_LIMIT=20
+
+# Optional: shared daily cap across ALL users, default 500.
+# This protects your AI bill if the site gets popular.
+supabase secrets set GLOBAL_DAILY_LIMIT=500
 ```
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are provided
@@ -92,8 +96,11 @@ set and a user is signed in, `WetalkLLM.isPlatformMode()` returns true:
   quota.
 - Counter table: `public.ai_usage(user_id, day, requests, tokens)`, keyed by the
   **UTC date** (`day`), so the quota resets at 00:00 UTC.
-- Limit: `DAILY_AI_LIMIT`, default `20`, read at call time (change the secret and
-  redeploy / restart the function to take effect).
+- Limit: `DAILY_AI_LIMIT`, default `20` per user, read at call time (change the
+  secret and redeploy / restart the function to take effect).
+- Global cap: `GLOBAL_DAILY_LIMIT`, default `500` requests/day across all users.
+  When it is reached every user gets the friendly quota message and offline
+  fallbacks, so a viral day cannot run up an unlimited AI bill.
 - Concurrency: the counter is updated with a compare-and-set update
   (`WHERE requests = <value read>`) with up to 3 retries, so two simultaneous
   answers cannot both count the same row. The pre-call check is a read, so in a

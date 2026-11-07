@@ -20,7 +20,9 @@
 //
 // Auto-provided env: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
 // Required secret:   DEEPSEEK_API_KEY
-// Optional secret:   DAILY_AI_LIMIT (default 20)
+// Optional secret:   DAILY_AI_LIMIT (default 20 per user per day)
+//                    GLOBAL_DAILY_LIMIT (default 500 across all users per day;
+//                    caps the owner's AI bill if the site gets popular)
 //
 // Deploy notes: docs/AI_PROXY_SETUP.md
 // ============================================================
@@ -36,6 +38,7 @@ const MAX_TOKENS_CAP = 1200;
 const MAX_TEMPERATURE = 0.7;
 const MAX_MESSAGES = 50;
 const DEFAULT_DAILY_LIMIT = 20;
+const DEFAULT_GLOBAL_DAILY_LIMIT = 500;
 const DEEPSEEK_TIMEOUT_MS = 45000;
 
 const CORS_HEADERS: Record<string, string> = {
@@ -66,6 +69,13 @@ function readDailyLimit(): number {
   const n = raw ? Number.parseInt(raw, 10) : NaN;
   if (!Number.isFinite(n) || n < 1) return DEFAULT_DAILY_LIMIT;
   return Math.min(n, 10000);
+}
+
+function readGlobalDailyLimit(): number {
+  const raw = Deno.env.get("GLOBAL_DAILY_LIMIT");
+  const n = raw ? Number.parseInt(raw, 10) : NaN;
+  if (!Number.isFinite(n) || n < 1) return DEFAULT_GLOBAL_DAILY_LIMIT;
+  return Math.min(n, 1000000);
 }
 
 function clampNumber(value: number, fallback: number, min: number, max: number): number {
@@ -122,6 +132,18 @@ async function readUsage(
  * the value we read) so two concurrent requests cannot both count the same
  * row; a lost race is retried with fresh values instead of double-counting.
  */
+/** Total AI requests made by everybody on the given UTC day. */
+async function readGlobalUsage(admin: SupabaseClient, day: string): Promise<number> {
+  const { data, error } = await admin
+    .from(USAGE_TABLE)
+    .select("requests")
+    .eq("day", day);
+  if (error) throw error;
+  return (data || []).reduce((total: number, row: unknown) => {
+    return total + (Number((row as Record<string, unknown>).requests) || 0);
+  }, 0);
+}
+
 async function incrementUsage(
   admin: SupabaseClient,
   userId: string,
@@ -258,6 +280,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
       message: "Daily AI limit reached - using offline scoring.",
       limit: dailyLimit,
       remaining: 0,
+    }, 429);
+  }
+
+  // Global cap: protects the owner's AI bill when the site gets popular.
+  const globalLimit = readGlobalDailyLimit();
+  let globalUsed = 0;
+  try {
+    globalUsed = await readGlobalUsage(admin, day);
+  } catch (err) {
+    console.error("Could not read global ai_usage", err);
+    return json({ error: "upstream", message: "The usage store is unavailable." }, 500);
+  }
+  if (globalUsed >= globalLimit) {
+    return json({
+      error: "quota_exceeded",
+      message: "The shared daily AI limit has been reached - using offline scoring.",
+      limit: dailyLimit,
+      remaining: Math.max(0, dailyLimit - used),
+      global_limit: globalLimit,
     }, 429);
   }
 

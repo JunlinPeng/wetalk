@@ -7,3 +7,5 @@
 - [ARCHITECTURE.md](ARCHITECTURE.md) - how the static app, auth, sync and AI
   routing fit together.
 - [TESTING.md](TESTING.md) - dev-only unit + end-to-end test harness.
+- [OPTIONAL_SETUP.md](OPTIONAL_SETUP.md) - included AI proxy deployment, GitHub/Google
+  sign-in, custom email (Resend) and free custom domain.
