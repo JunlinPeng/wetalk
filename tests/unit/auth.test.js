@@ -12,14 +12,34 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { createWindow, loadScripts } = require("../helpers/mock-browser");
+const { createWindow, loadScripts, loadSource } = require("../helpers/mock-browser");
 
 const PREVIEW_BANNER_NOTE =
   "preview banner detection needs a real browser - covered by tests/e2e/specs/a11y.spec.js";
 
-function loadAuth(options, sharedStorage) {
+// js/config.js points at the LIVE Supabase project (that is intentional in
+// production), so unit tests must not load it: they stub the public runtime
+// config instead. Empty values = Preview mode; a URL + anon key = configured
+// Supabase mode.
+const PREVIEW_CONFIG_SOURCE = [
+  "/* unit-test stub of js/config.js - empty values mean Preview mode */",
+  "window.WETALK_CONFIG = { supabaseUrl: '', supabaseAnonKey: '', aiProxyUrl: '', siteUrl: '' };",
+].join("\n");
+
+const CONFIGURED_CONFIG_SOURCE = [
+  "/* unit-test stub of js/config.js - a configured Supabase project */",
+  "window.WETALK_CONFIG = {",
+  "  supabaseUrl: 'https://qa-project.supabase.co',",
+  "  supabaseAnonKey: 'qa-public-anon-key',",
+  "  aiProxyUrl: 'https://qa-project.supabase.co/functions/v1/ai-feedback',",
+  "  siteUrl: ''",
+  "};",
+].join("\n");
+
+function loadAuth(options, sharedStorage, configSource) {
   const win = createWindow(Object.assign({}, options || {}, { storage: sharedStorage }));
-  loadScripts(win, ["js/config.js", "js/auth.js"]);
+  loadSource(win, configSource || PREVIEW_CONFIG_SOURCE, "unit-stub-config.js");
+  loadScripts(win, ["js/auth.js"]);
   // Let any DOMContentLoaded hook (e.g. preview-banner injection) run.
   if (win.__document && typeof win.__document._fire === "function") {
     win.__document._fire("DOMContentLoaded");
@@ -263,6 +283,41 @@ test("auth: isPreviewMode reflects WETALK_CONFIG", (t) => {
   if (!newAuthApi(auth)) return skipPending(t, "isPreviewMode()");
   assert.equal(auth.isPreviewMode(), true, "empty config must mean preview mode");
   assert.equal(auth.getClient(), null, "no Supabase client in preview mode");
+});
+
+// ---------------------------------------------------------------
+// Configured Supabase mode (the production configuration)
+// ---------------------------------------------------------------
+test("auth: a configured Supabase project takes the site out of Preview mode", () => {
+  const win = loadAuth({}, null, CONFIGURED_CONFIG_SOURCE);
+  const auth = win.WetalkAuth;
+  assert.equal(auth.isPreviewMode(), false, "a URL + anon key must not be Preview mode");
+  // The mock window has no vendored supabase-js global, so no client can be
+  // built - the page must degrade instead of falling back to local accounts.
+  assert.equal(auth.getClient(), null, "without vendor/supabase.js there is no Supabase client");
+  const banner = win.__document.body.children.find((el) => /preview-banner/.test(el.className || ""));
+  assert.equal(banner, undefined, "configured mode must not inject the Preview-mode banner");
+});
+
+test("auth: configured mode without a Supabase client reports 'still loading' instead of creating local accounts", async () => {
+  const win = loadAuth({}, null, CONFIGURED_CONFIG_SOURCE);
+  const auth = win.WetalkAuth;
+
+  const signup = await auth.createAccount({
+    email: "configured@example.com",
+    identifier: "configured@example.com",
+    username: "configured_user",
+    password: "correct-horse-1",
+  });
+  assert.equal(signup.ok, false, "configured mode must not silently create a local account");
+  assert.match(String(signup.error || ""), /still loading/i, "the page should explain the client is not ready yet");
+
+  const signin = await auth.authenticate("configured@example.com", "correct-horse-1");
+  assert.equal(signin.ok, false, "configured mode must not authenticate against local accounts");
+  assert.match(String(signin.error || ""), /still loading/i, "the page should explain the client is not ready yet");
+
+  assert.equal(win.__storage.getItem("wetalk.accounts"), null, "no preview accounts may be written in configured mode");
+  assert.equal(auth.getSession(), null, "a failed Supabase-mode sign-in must not create a session");
 });
 
 test("auth: preview banner is inserted for preview visitors", (t) => {

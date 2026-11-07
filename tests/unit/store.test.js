@@ -14,22 +14,31 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { createWindow, loadScripts, siteFileExists } = require("../helpers/mock-browser");
+const { createWindow, loadScripts, loadSource, siteFileExists } = require("../helpers/mock-browser");
 
 const STORE_PRESENT = siteFileExists("js/store.js");
 const STORE_MISSING_REASON =
   "PENDING: js/store.js has not landed yet (data workstream) - see docs/ARCHITECTURE.md";
 
+// Do not load the real js/config.js (it points at the live Supabase project):
+// stub the public runtime config so the Preview-mode behaviour is deterministic.
+const PREVIEW_CONFIG_SOURCE = [
+  "/* unit-test stub of js/config.js - empty values mean Preview mode */",
+  "window.WETALK_CONFIG = { supabaseUrl: '', supabaseAnonKey: '', aiProxyUrl: '', siteUrl: '' };",
+].join("\n");
+
 function loadStore(options) {
   const win = createWindow(options);
-  loadScripts(win, ["js/config.js", "js/store.js"]);
+  loadSource(win, PREVIEW_CONFIG_SOURCE, "unit-stub-config.js");
+  loadScripts(win, ["js/store.js"]);
   return win;
 }
 
 /** Preview mode: empty config, no auth -> store disabled. */
 function loadPreview() {
   const win = createWindow();
-  loadScripts(win, ["js/config.js", "js/auth.js", "js/store.js"]);
+  loadSource(win, PREVIEW_CONFIG_SOURCE, "unit-stub-config.js");
+  loadScripts(win, ["js/auth.js", "js/store.js"]);
   return win;
 }
 

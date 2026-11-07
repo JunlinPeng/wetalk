@@ -7,7 +7,7 @@
    ============================================================ */
 "use strict";
 
-const { newContext, pageUrl, pageModes, MOBILE_VIEWPORT, DESKTOP_VIEWPORT } = require("../lib/harness");
+const { newContext, pageUrl, pageModes, ensureAuth, MOBILE_VIEWPORT, DESKTOP_VIEWPORT } = require("../lib/harness");
 
 async function measure(page) {
   return page.evaluate(() => {
@@ -43,9 +43,15 @@ module.exports = {
   name: "responsive",
   requiresBrowser: true,
   run: async (ctx) => {
+    const needsAuth = ctx.pages.some((pageName) => pageModes(pageName).some((pageMode) => pageMode.signedIn));
+    const auth = needsAuth ? await ensureAuth(ctx.browser) : { ok: false, error: "" };
     for (const pageName of ctx.pages) {
       for (const pageMode of pageModes(pageName)) {
         const label = pageName + " [" + pageMode.mode + "]";
+        if (pageMode.signedIn && !auth.ok) {
+          ctx.skip(label, "live QA sign-in unavailable: " + auth.error);
+          continue;
+        }
         // ---- mobile ----
         const mobileContext = await newContext(ctx.browser, { signedIn: pageMode.signedIn, viewport: MOBILE_VIEWPORT });
         const mobilePage = await mobileContext.newPage();

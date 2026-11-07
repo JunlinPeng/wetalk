@@ -22,6 +22,7 @@ const { startServer } = require("../helpers/static-server");
 
 const SPECS = [
   require("./specs/http.spec"),
+  require("./specs/v2.spec"),
   require("./specs/pages.spec"),
   require("./specs/links.spec"),
   require("./specs/a11y.spec"),
@@ -125,6 +126,9 @@ async function main() {
     }
   }
   console.log("  server:   " + server.baseURL);
+  // The signed-in specs use the live Supabase QA account; tell the harness
+  // where the site is served so it can sign in through the real UI.
+  harness.configure({ baseURL: server.baseURL });
 
   // ---------- browser ----------
   const edgePath = harness.findEdgePath();
@@ -151,6 +155,18 @@ async function main() {
     }
   }
   if (browserSkipReason) console.log("  browser:  SKIPPED - " + browserSkipReason);
+
+  // One real sign-in for the whole run; protected pages reuse its storage
+  // state. When it fails the signed-in checks SKIP with the reason instead of
+  // silently loading the sign-in page.
+  if (browser) {
+    const auth = await harness.ensureAuth(browser);
+    if (auth.ok) {
+      console.log("  auth:     signed in as " + harness.TEST_ACCOUNT.email);
+    } else {
+      console.log("  auth:     SKIPPED signed-in checks - " + auth.error);
+    }
+  }
 
   const context = {
     ...recorder,
@@ -219,6 +235,7 @@ async function main() {
     durationMs: summary.durationMs,
     baseURL: server.baseURL,
     browser: browser ? { engine: "msedge", executablePath: edgePath, headless: !process.env.WETALK_E2E_HEADED } : { skipped: browserSkipReason },
+    auth: harness.authStatus(),
     pages,
     screenshots: screenshotDir,
     specSummary,

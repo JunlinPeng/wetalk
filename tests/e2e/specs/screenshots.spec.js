@@ -19,6 +19,7 @@ const {
   pageModes,
   pageSafeName,
   screenshot,
+  ensureAuth,
   DESKTOP_VIEWPORT,
   MOBILE_VIEWPORT,
 } = require("../lib/harness");
@@ -32,11 +33,17 @@ module.exports = {
       { name: "mobile", viewport: MOBILE_VIEWPORT },
     ];
     let captured = 0;
+    const needsAuth = ctx.pages.some((pageName) => pageModes(pageName).some((pageMode) => pageMode.signedIn));
+    const auth = needsAuth ? await ensureAuth(ctx.browser) : { ok: false, error: "" };
 
     for (const pageName of ctx.pages) {
       for (const pageMode of pageModes(pageName)) {
         for (const viewport of viewports) {
           const label = pageName + " [" + pageMode.mode + "] " + viewport.name;
+          if (pageMode.signedIn && !auth.ok) {
+            ctx.skip(label, "live QA sign-in unavailable: " + auth.error);
+            continue;
+          }
           const context = await newContext(ctx.browser, {
             signedIn: pageMode.signedIn,
             viewport: viewport.viewport,

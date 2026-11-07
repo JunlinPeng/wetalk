@@ -326,6 +326,15 @@ function loadScripts(win, relPaths) {
   return win;
 }
 
+/**
+ * Evaluate an inline script source in the fake window. Used to stub
+ * js/config.js in unit tests instead of reading the live project config.
+ */
+function loadSource(win, source, filename) {
+  vm.runInContext(String(source), win.__context, { filename: filename || "wetalk-inline-script.js" });
+  return win;
+}
+
 /** Returns the source of a site script (used by structural tests). */
 function readScript(relPath) {
   return fs.readFileSync(path.resolve(REPO_ROOT, relPath), "utf8");
@@ -342,6 +351,7 @@ module.exports = {
   createWindow,
   loadScript,
   loadScripts,
+  loadSource,
   readScript,
   siteFileExists,
 };

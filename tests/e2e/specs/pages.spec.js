@@ -16,6 +16,8 @@ const {
   newContext,
   pageUrl,
   pageModes,
+  isProtectedPage,
+  ensureAuth,
   attachDiagnostics,
   diagnosticsSummary,
   pendingReferenceReason,
@@ -25,17 +27,28 @@ module.exports = {
   name: "pages",
   requiresBrowser: true,
   run: async (ctx) => {
+    const needsAuth = ctx.pages.some((pageName) => pageModes(pageName).some((pageMode) => pageMode.signedIn));
+    const auth = needsAuth ? await ensureAuth(ctx.browser) : { ok: false, error: "" };
     for (const pageName of ctx.pages) {
       for (const pageMode of pageModes(pageName)) {
         const label = pageName + " [" + pageMode.mode + "]";
+        if (pageMode.signedIn && !auth.ok) {
+          ctx.skip(label, "live QA sign-in unavailable: " + auth.error);
+          continue;
+        }
         const context = await newContext(ctx.browser, { signedIn: pageMode.signedIn });
         const page = await context.newPage();
         const diagnostics = attachDiagnostics(page);
         try {
           const response = await page.goto(pageUrl(ctx.baseURL, pageName), { waitUntil: "load" });
-          await page.waitForTimeout(300); // let async scripts finish
+          await page.waitForTimeout(pageMode.signedIn ? 600 : 300); // let async scripts finish
 
           const problems = [];
+          // A protected page must not bounce to signin when the context really
+          // is signed in (that would mean the session cache was lost).
+          if (pageMode.signedIn && isProtectedPage(pageName) && /\/signin\.html/.test(page.url())) {
+            problems.push("redirected to signin.html despite the signed-in context (session lost)");
+          }
           const pendingNotes = new Set();
           if (!response) problems.push("no document response");
           else if (response.status() !== 200) problems.push("HTTP " + response.status());

@@ -8,12 +8,13 @@
    ============================================================ */
 "use strict";
 
-const { newContext, pageUrl, pageModes, pendingReason } = require("../lib/harness");
+const { newContext, pageUrl, pageModes, pendingReason, ensureAuth } = require("../lib/harness");
 
 module.exports = {
   name: "links",
   requiresBrowser: true,
   run: async (ctx) => {
+    const auth = await ensureAuth(ctx.browser);
     const queue = ctx.pages.slice();
     const visited = new Set();
     const targets = new Map(); // path -> { from }
@@ -25,11 +26,19 @@ module.exports = {
       visited.add(pageName);
 
       const pageMode = pageModes(pageName)[0];
+      if (pageMode.signedIn && !auth.ok) {
+        ctx.skip(pageName + " link crawl", "live QA sign-in unavailable: " + auth.error);
+        continue;
+      }
       const context = await newContext(ctx.browser, { signedIn: pageMode.signedIn });
       const page = await context.newPage();
       try {
         await page.goto(pageUrl(ctx.baseURL, pageName), { waitUntil: "load" });
-        await page.waitForTimeout(200);
+        await page.waitForTimeout(pageMode.signedIn ? 500 : 200);
+        if (pageMode.signedIn && /\/signin\.html/.test(page.url())) {
+          ctx.fail(pageName + " link crawl", "redirected to signin.html despite the signed-in context");
+          continue;
+        }
         const hrefs = await page.$$eval("a[href]", (anchors) =>
           anchors.map((anchor) => ({ href: anchor.getAttribute("href"), text: (anchor.textContent || "").trim().slice(0, 40) }))
         );

@@ -8,7 +8,7 @@
    ============================================================ */
 "use strict";
 
-const { newContext, pageUrl, pageModes, siteSource } = require("../lib/harness");
+const { newContext, pageUrl, pageModes, siteSource, ensureAuth } = require("../lib/harness");
 
 async function collectIssues(page) {
   return page.evaluate(() => {
@@ -95,9 +95,15 @@ module.exports = {
   name: "a11y",
   requiresBrowser: true,
   run: async (ctx) => {
+    const needsAuth = ctx.pages.some((pageName) => pageModes(pageName).some((pageMode) => pageMode.signedIn));
+    const auth = needsAuth ? await ensureAuth(ctx.browser) : { ok: false, error: "" };
     for (const pageName of ctx.pages) {
       for (const pageMode of pageModes(pageName)) {
         const label = pageName + " [" + pageMode.mode + "]";
+        if (pageMode.signedIn && !auth.ok) {
+          ctx.skip(label, "live QA sign-in unavailable: " + auth.error);
+          continue;
+        }
         const context = await newContext(ctx.browser, { signedIn: pageMode.signedIn });
         const page = await context.newPage();
         try {
@@ -122,6 +128,9 @@ module.exports = {
     }
 
     // ---- Preview mode banner (js/auth.js contract) ----
+    // With a real Supabase project in js/config.js the site is NOT preview mode,
+    // so the banner must be absent. The banner is still verified when a build
+    // ships an empty config (Preview mode).
     const authSource = siteSource("js/auth.js");
     const bannerImplemented = /preview-banner/.test(authSource);
     const context = await newContext(ctx.browser, { signedIn: false });
@@ -129,20 +138,39 @@ module.exports = {
     try {
       await page.goto(pageUrl(ctx.baseURL, "signin.html"), { waitUntil: "load" });
       await page.waitForTimeout(300);
-      const banner = await page.evaluate(() => {
+      const info = await page.evaluate(() => {
         const el = document.querySelector(".preview-banner");
-        if (!el) return null;
-        const rect = el.getBoundingClientRect();
-        return { text: (el.textContent || "").trim(), visible: rect.width > 0 && rect.height > 0 };
+        const auth = window.WetalkAuth;
+        const rect = el ? el.getBoundingClientRect() : null;
+        return {
+          preview: auth && typeof auth.isPreviewMode === "function" ? !!auth.isPreviewMode() : null,
+          banner: el ? { text: (el.textContent || "").trim(), visible: !!rect && rect.width > 0 && rect.height > 0 } : null,
+        };
       });
-      if (banner) {
-        if (/preview mode/i.test(banner.text)) ctx.pass("preview-mode banner shown", banner.text.slice(0, 120));
-        else ctx.warn("preview-mode banner text", "expected 'Preview mode...', got: " + banner.text.slice(0, 120));
-        if (!banner.visible) ctx.warn("preview-mode banner visibility", "banner is in the DOM but has zero size");
-      } else if (bannerImplemented) {
-        ctx.fail("preview-mode banner", "js/auth.js defines .preview-banner but signin.html does not show it");
+      if (info.preview === true) {
+        if (!info.banner) {
+          ctx.fail(
+            "preview-mode banner",
+            bannerImplemented
+              ? "Preview mode is active (empty js/config.js) but the banner is not shown"
+              : "Preview mode is active but js/auth.js does not implement the banner"
+          );
+        } else {
+          if (/preview mode/i.test(info.banner.text)) ctx.pass("preview-mode banner shown", info.banner.text.slice(0, 120));
+          else ctx.warn("preview-mode banner text", "expected 'Preview mode...', got: " + info.banner.text.slice(0, 120));
+          if (!info.banner.visible) ctx.warn("preview-mode banner visibility", "banner is in the DOM but has zero size");
+        }
+      } else if (info.preview === false) {
+        if (info.banner) {
+          ctx.warn(
+            "preview-mode banner absent",
+            "banner is shown although a real Supabase project is configured (not Preview mode)"
+          );
+        } else {
+          ctx.pass("preview-mode banner absent (real Supabase project configured)");
+        }
       } else {
-        ctx.pending("preview-mode banner", "PENDING: auth workstream - js/auth.js does not inject .preview-banner yet");
+        ctx.pending("preview-mode banner", "WetalkAuth.isPreviewMode() is not available on signin.html");
       }
     } catch (err) {
       ctx.fail("preview-mode banner", "could not check: " + (err.message || err));
