@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wetalk - Practice</title>
   <meta name="description" content="Wetalk practice workspace: impromptu speech, Vericant interview and TOEFL speaking with AI feedback." />
+  <meta property="og:title" content="Wetalk - Practice" />
+  <meta property="og:description" content="Practice out loud, score on the real rubric. Impromptu Speech, Vericant Interview and TOEFL Speaking, free in your browser." />
+  <meta property="og:image" content="https://junlinpeng.github.io/wetalk/assets/og-card.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://junlinpeng.github.io/wetalk/assets/og-card.png" />
   <meta name="theme-color" content="#F7F4EC" />
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="v2/css/styles.css?v=7" />
@@ -244,6 +249,7 @@
 
         <div class="results__actions">
           <button class="btn btn--primary" id="btnSave">Save to My Work</button>
+          <button class="btn btn--ghost" id="btnShare">Share Result</button>
           <button class="btn btn--ghost" id="btnAgain">Practice Again</button>
           <button class="btn btn--ghost" id="btnHome">Back to Home</button>
         </div>
@@ -321,5 +327,9 @@
       } catch (e) { /* signed-out visitors are redirected above */ }
     })();
   </script>
+  <!-- Analytics: GoatCounter (free, cookieless, no personal data).
+       Replace YOUR-SITE with the site code from goatcounter.com - see docs/LAUNCH.md step 1. -->
+  <script data-goatcounter="https://YOUR-SITE.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

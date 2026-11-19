@@ -1407,6 +1407,39 @@ html.motion-ok .reveal.is-in { opacity: 1; transform: none; }
   .site-nav .brand__name { font-size: 17px; }
 }
 
+/* ===================== FAQ ===================== */
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.faq-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.faq-item__q {
+  margin: 0 0 8px;
+  font-size: 19px;
+  color: var(--heading);
+}
+
+.faq-item__a {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--muted-strong);
+}
+
+@media (max-width: 720px) {
+  .faq-grid { grid-template-columns: 1fr; }
+}
+
 /* ===================== REDUCED MOTION ===================== */
 
 @media (prefers-reduced-motion: reduce) {

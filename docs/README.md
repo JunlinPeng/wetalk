@@ -9,3 +9,6 @@
 - [TESTING.md](TESTING.md) - dev-only unit + end-to-end test harness.
 - [OPTIONAL_SETUP.md](OPTIONAL_SETUP.md) - included AI proxy deployment, GitHub/Google
   sign-in, custom email (Resend) and free custom domain.
+- [LAUNCH.md](LAUNCH.md) - promotion kit: analytics setup, search-engine
+  submission, ready-to-post Product Hunt / Reddit / X copy and a weekly
+  growth rhythm.

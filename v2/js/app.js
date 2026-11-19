@@ -1361,6 +1361,33 @@
     if (isMulti && !r.aiOverall) requestAiFeedback(r);
   }
 
+  // Share the finished result: native share sheet where available, clipboard
+  // otherwise. Turns every practice round into a possible referral.
+  function shareResult() {
+    var r = state.currentResult;
+    if (!r || !r.scores) return;
+    var maxScore = r.scores.max || 5;
+    var title = String(r.title || "").replace(/\s+/g, " ").trim();
+    if (title.length > 80) title = title.slice(0, 77) + "...";
+    var text = "I scored " + fmtScore(r.scores.overall, maxScore) + "/" + maxScore +
+      " on " + (r.modeLabel || "a practice round") +
+      (title ? ' - "' + title + '"' : "") +
+      ". Practice free at Wetalk:";
+    var url = "https://junlinpeng.github.io/wetalk/";
+    if (navigator.share) {
+      navigator.share({ text: text, url: url }).catch(function () { /* user cancelled */ });
+      return;
+    }
+    var payload = text + " " + url;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(payload).then(function () {
+        toast("Result copied - paste it anywhere.");
+      }, function () { toast("Copy failed - your browser blocked the clipboard."); });
+    } else {
+      toast("Sharing is not supported in this browser.");
+    }
+  }
+
   // ---------------- AI feedback (included AI via the Wetalk account) ----------------
   var API_KEY_STORAGE = "wetalk.v2.apiKey";
   var AI_FEEDBACK_TIMEOUT = 30000;
@@ -1633,6 +1660,8 @@
     });
 
     $("btnSave").addEventListener("click", saveResult);
+    var btnShare = $("btnShare");
+    if (btnShare) btnShare.addEventListener("click", shareResult);
     $("btnAgain").addEventListener("click", function () {
       var m = state.currentResult ? state.currentResult.mode : "impromptu";
       openMode(m);
