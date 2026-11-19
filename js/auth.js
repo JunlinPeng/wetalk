@@ -831,6 +831,123 @@
     }
   }
 
+  // ---------- Google One Tap (one-click sign-in) ----------
+  // Loads the Google Identity Services script on demand and shows the
+  // One Tap account chooser. The returned ID token is exchanged with
+  // Supabase via signInWithIdToken, so the session lands in the same
+  // cache and fires the same onChange listeners as every other flow.
+  var GOOGLE_CLIENT_ID = trim(CONFIG.googleClientId);
+  var GIS_SRC = "https://accounts.google.com/gsi/client";
+  var gisLoading = false;
+  var gisCallbacks = [];
+
+  function loadGoogleIdentityServices(callback) {
+    var gsi = global.google && global.google.accounts && global.google.accounts.id;
+    if (gsi) { callback(gsi); return; }
+    if (callback) gisCallbacks.push(callback);
+    if (gisLoading) return;
+    gisLoading = true;
+    var el = document.createElement("script");
+    el.src = GIS_SRC;
+    el.async = true;
+    el.onload = function () {
+      gisLoading = false;
+      var ready = global.google && global.google.accounts && global.google.accounts.id;
+      drainGisCallbacks(ready || null);
+    };
+    el.onerror = function () {
+      gisLoading = false;
+      if (global.console && global.console.warn) {
+        global.console.warn("WetalkAuth: could not load " + GIS_SRC + " - Google One Tap is unavailable on this page.");
+      }
+      drainGisCallbacks(null);
+    };
+    document.head.appendChild(el);
+  }
+
+  function drainGisCallbacks(gsi) {
+    var callbacks = gisCallbacks;
+    gisCallbacks = [];
+    for (var i = 0; i < callbacks.length; i++) {
+      try { callbacks[i](gsi); } catch (e) {}
+    }
+  }
+
+  // options: { onSuccess(session), onError(message), onUnavailable() }
+  // Returns true when the prompt was started, false when One Tap does
+  // not apply (Preview mode, no client ID configured, already signed in).
+  function initGoogleOneTap(options) {
+    options = options || {};
+    if (PREVIEW || !GOOGLE_CLIENT_ID) return false;
+    if (getSession()) return false;
+
+    // Inject the Google script only after the window "load" event: a
+    // script appended earlier delays "load" until it finishes, which
+    // would hang the whole page on networks where Google is unreachable.
+    var begin = function () { startGoogleOneTap(options); };
+    if (document.readyState === "complete") {
+      begin();
+    } else if (global.addEventListener) {
+      global.addEventListener("load", function once() {
+        global.removeEventListener("load", once);
+        begin();
+      });
+    } else {
+      global.setTimeout(begin, 0);
+    }
+    return true;
+  }
+
+  function startGoogleOneTap(options) {
+    loadGoogleIdentityServices(function (gsi) {
+      if (!gsi) {
+        if (typeof options.onUnavailable === "function") options.onUnavailable();
+        return;
+      }
+      try {
+        gsi.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          auto_select: true,
+          cancel_on_tap_outside: true,
+          callback: function (response) {
+            handleOneTapCredential(response, options);
+          }
+        });
+        gsi.prompt();
+      } catch (e) {
+        if (typeof options.onUnavailable === "function") options.onUnavailable();
+      }
+    });
+    return true;
+  }
+
+  function handleOneTapCredential(response, options) {
+    var token = response && response.credential;
+    if (!token) {
+      oneTapError(options, "Google did not return a credential. Please try the button below.");
+      return;
+    }
+    whenClientReady(function (c) {
+      c.auth.signInWithIdToken({ provider: "google", token: token })
+        .then(function (res) {
+          if (!res || res.error || !res.data || !res.data.session) {
+            oneTapError(options, friendlyAuthError(res && res.error));
+            return;
+          }
+          var session = cacheSupabaseSession(res.data.session, true);
+          if (typeof options.onSuccess === "function") options.onSuccess(session);
+        })
+        .catch(function (err) {
+          oneTapError(options, friendlyAuthError(err));
+        });
+    });
+  }
+
+  function oneTapError(options, message) {
+    if (typeof options.onError === "function") { options.onError(message); return; }
+    toast(message);
+  }
+
   // ---------- password reset ----------
   function resetPassword(email) {
     if (PREVIEW) {
@@ -935,6 +1052,7 @@
     authenticate: authenticate,
     signOut: signOut,
     oauthSignIn: oauthSignIn,
+    initGoogleOneTap: initGoogleOneTap,
     resetPassword: resetPassword,
     updatePassword: updatePassword,
     // helpers used by the auth pages

@@ -175,13 +175,22 @@ Email sign-up works without them.
    account as a test user.
 3. **APIs & Services** -> **Credentials** -> **Create credentials** ->
    **OAuth client ID** -> **Web application**.
-   - Authorised JavaScript origin: `https://junlinpeng.github.io`
+   - Authorised JavaScript origins: `https://junlinpeng.github.io` and
+     `http://localhost:8080` (the origins also power One Tap below)
    - Authorised redirect URI:
      `https://<project-ref>.supabase.co/auth/v1/callback`
      (replace `<project-ref>` with your Supabase project ref)
 4. Copy the **Client ID** and **Client secret**.
 5. In Supabase: **Authentication** -> **Providers** -> **Google** -> enable,
-   paste the Client ID and Client secret, save.
+   paste the Client ID and Client secret, save
+   (or run `scripts/configure_auth.ps1 -GoogleClientId ... -GoogleClientSecret ...`).
+6. Optional - **One Tap one-click sign-in**: paste the same Client ID into
+   `js/config.js` as `googleClientId`. `signin.html` and `signup.html` then
+   show Google's One Tap account chooser to signed-out visitors who are
+   already logged into Google; the ID token is exchanged with Supabase via
+   `signInWithIdToken`. The Client ID is a public value and safe to commit;
+   the secret stays in Supabase only. Leave `googleClientId` empty to keep
+   just the "Continue with Google" button.
 
 ### GitHub
 

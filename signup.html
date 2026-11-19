@@ -180,6 +180,13 @@
           });
       });
 
+      // Google One Tap: one-click account creation/sign-in for visitors
+      // already logged into Google. Falls back silently to the button.
+      WetalkAuth.initGoogleOneTap({
+        onSuccess: function () { window.location.replace("app.html"); },
+        onError: function (message) { setHint("formHint", message, true); }
+      });
+
       document.getElementById("googleBtn").addEventListener("click", function () {
         WetalkAuth.oauthSignIn("google", "app.html");
       });

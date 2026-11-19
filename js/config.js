@@ -17,6 +17,11 @@ window.WETALK_CONFIG = {
   supabaseAnonKey: "sb_publishable_RmgoWbrsIOGNI944m58Kiw_SrrmKyEn",
   // Deployed AI feedback Edge Function URL (deployed 2026-11-07)
   aiProxyUrl: "https://efhprhfonzgmpwzkzjup.supabase.co/functions/v1/ai-feedback",
+  // Google OAuth 2.0 Client ID (Web application) used for One Tap
+  // one-click sign-in on signin.html / signup.html. Public value, safe
+  // to commit - the matching client secret lives only in Supabase
+  // (Authentication > Providers > Google). Leave empty to disable One Tap.
+  googleClientId: "328898663521-eq45ff21sd03fgojgiro5qs6bjqoqu9h.apps.googleusercontent.com",
   // Optional canonical site URL used for auth redirects.
   // Defaults to the page origin at runtime.
   siteUrl: ""

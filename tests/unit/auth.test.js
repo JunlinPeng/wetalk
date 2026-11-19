@@ -333,3 +333,134 @@ test("auth: preview banner is inserted for preview visitors", (t) => {
   }
   assert.ok(banner || /preview-banner/.test(html), "a .preview-banner element should be in the body");
 });
+
+// ---------------------------------------------------------------
+// Google One Tap (initGoogleOneTap)
+// ---------------------------------------------------------------
+const ONE_TAP_CONFIG_SOURCE = [
+  "/* unit-test stub of js/config.js - configured + Google One Tap client ID */",
+  "window.WETALK_CONFIG = {",
+  "  supabaseUrl: 'https://qa-project.supabase.co',",
+  "  supabaseAnonKey: 'qa-public-anon-key',",
+  "  aiProxyUrl: '',",
+  "  googleClientId: 'qa-google-client-id.apps.googleusercontent.com',",
+  "  siteUrl: ''",
+  "};",
+].join("\n");
+
+function fakeGoogleSession() {
+  return {
+    access_token: "qa-access-token",
+    user: {
+      id: "user-one-tap-1",
+      email: "onetap@example.com",
+      user_metadata: { full_name: "One Tap" },
+      app_metadata: { provider: "google" },
+    },
+  };
+}
+
+function fakeSupabaseLib(session, signInError) {
+  const client = {
+    auth: {
+      onAuthStateChange() {},
+      getSession: () => Promise.resolve({ data: { session: null } }),
+      signInWithIdToken: signInError
+        ? () => Promise.resolve({ data: {}, error: { message: signInError } })
+        : () => Promise.resolve({ data: { session }, error: null }),
+      signOut: () => Promise.resolve({}),
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
+    }),
+  };
+  return { createClient: () => client };
+}
+
+function fakeGsi(captured) {
+  return {
+    accounts: {
+      id: {
+        initialize(options) {
+          captured.initializeOptions = options;
+        },
+        prompt() {
+          captured.prompted = true;
+        },
+      },
+    },
+  };
+}
+
+test("auth.initGoogleOneTap is exposed and no-ops in Preview mode", () => {
+  const auth = loadAuth().WetalkAuth;
+  assert.equal(typeof auth.initGoogleOneTap, "function", "WetalkAuth.initGoogleOneTap should be a function");
+  assert.equal(auth.initGoogleOneTap({}), false, "Preview mode has no real accounts - One Tap must not start");
+});
+
+test("auth.initGoogleOneTap no-ops when googleClientId is not configured", () => {
+  const win = loadAuth({}, null, CONFIGURED_CONFIG_SOURCE);
+  assert.equal(win.WetalkAuth.initGoogleOneTap({}), false, "an empty googleClientId disables One Tap");
+});
+
+test("auth.initGoogleOneTap no-ops for an already signed-in visitor", () => {
+  const win = loadAuth(
+    { storageSeed: { "wetalk.session": { username: "signed_in", email: "in@example.com" } } },
+    null,
+    ONE_TAP_CONFIG_SOURCE
+  );
+  assert.ok(win.WetalkAuth.getSession(), "the seeded session should be picked up");
+  assert.equal(win.WetalkAuth.initGoogleOneTap({}), false, "no prompt for signed-in visitors");
+});
+
+test("auth.initGoogleOneTap exchanges the Google credential and caches the session", async () => {
+  const win = loadAuth({}, null, ONE_TAP_CONFIG_SOURCE);
+  const captured = {};
+  win.google = fakeGsi(captured);
+  win.supabase = fakeSupabaseLib(fakeGoogleSession());
+
+  let succeeded = null;
+  let failed = null;
+  const started = win.WetalkAuth.initGoogleOneTap({
+    onSuccess: (session) => { succeeded = session; },
+    onError: (message) => { failed = message; },
+  });
+  assert.equal(started, true, "One Tap should start for a signed-out visitor with a client ID");
+  assert.equal(captured.initializeOptions.client_id, "qa-google-client-id.apps.googleusercontent.com");
+  assert.equal(captured.prompted, true, "the One Tap prompt should be shown");
+
+  // Simulate Google returning an ID token for the chosen account.
+  captured.initializeOptions.callback({ credential: "qa-google-id-token" });
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(failed, null, "the exchange should not fail: " + failed);
+  assert.ok(succeeded, "onSuccess should receive the shaped session");
+  const session = win.WetalkAuth.getSession();
+  assert.ok(session, "the session should be cached like every other sign-in");
+  assert.equal(session.provider, "google");
+  assert.equal(session.email, "onetap@example.com");
+  assert.equal(session.id, "user-one-tap-1");
+});
+
+test("auth.initGoogleOneTap surfaces exchange failures through onError", async () => {
+  const win = loadAuth({}, null, ONE_TAP_CONFIG_SOURCE);
+  const captured = {};
+  win.google = fakeGsi(captured);
+  win.supabase = fakeSupabaseLib(null, "Invalid token");
+
+  let succeeded = null;
+  let failed = null;
+  win.WetalkAuth.initGoogleOneTap({
+    onSuccess: (session) => { succeeded = session; },
+    onError: (message) => { failed = message; },
+  });
+  captured.initializeOptions.callback({ credential: "bad-token" });
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(succeeded, null, "a failed exchange must not sign the visitor in");
+  assert.equal(typeof failed, "string");
+  assert.ok(failed.length > 0, "onError should receive a readable message");
+  assert.equal(win.WetalkAuth.getSession(), null, "no session may be cached on failure");
+});

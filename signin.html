@@ -98,6 +98,14 @@
         if (session) goNext();
       });
 
+      // Google One Tap: one-click sign-in for visitors already logged
+      // into Google. Falls back silently to the button below when the
+      // prompt is unavailable or dismissed.
+      WetalkAuth.initGoogleOneTap({
+        onSuccess: goNext,
+        onError: function (message) { setHint("formHint", message, true); }
+      });
+
       var form = document.getElementById("signinForm");
       var emailInput = document.getElementById("email");
       var passwordInput = document.getElementById("password");

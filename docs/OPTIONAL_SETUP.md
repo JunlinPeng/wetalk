@@ -82,11 +82,16 @@ No site change is needed: the "Continue with GitHub" buttons already call
 1. <https://console.cloud.google.com> -> create/select a project.
 2. APIs & Services -> OAuth consent screen (External, app name Wetalk).
 3. Credentials -> Create credentials -> OAuth client ID -> Web application.
-   - Authorised JavaScript origin: \`https://junlinpeng.github.io\`
+   - Authorised JavaScript origins: \`https://junlinpeng.github.io\` and
+     \`http://localhost:8080\`
    - Authorised redirect URI: \`https://efhprhfonzgmpwzkzjup.supabase.co/auth/v1/callback\`
 4. Copy Client ID + secret, then either run \`scripts/configure_auth.ps1\` with
    \`-GoogleClientId/-GoogleClientSecret\`, or paste them in
    Supabase -> Authentication -> Providers -> Google.
+5. One Tap one-click sign-in: put the Client ID in \`js/config.js\` as
+   \`googleClientId\` (public value, safe to commit). \`signin.html\` /
+   \`signup.html\` then show Google's One Tap account chooser and exchange the
+   ID token via \`supabase.auth.signInWithIdToken\`; empty value disables it.
 
 ---
 
