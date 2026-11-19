@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy - Wetalk</title>
+  <meta name="description" content="How Wetalk handles your account and practice data." />
+  <meta name="theme-color" content="#F7F4EC" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/light.css" />
+  <style>
+    .legal { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+    .legal h1 { margin: 0 0 8px; }
+    .legal h2 { margin: 32px 0 8px; font-size: 1.15rem; }
+    .legal p, .legal li { line-height: 1.65; }
+    .legal ul { padding-left: 22px; }
+    .legal .updated { opacity: .65; }
+  </style>
+</head>
+<body>
+  <main class="legal">
+    <p><a href="index.html">&larr; Back to Wetalk</a></p>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: November 19, 2026</p>
+
+    <p>
+      Wetalk (<a href="https://junlinpeng.github.io/wetalk/">https://junlinpeng.github.io/wetalk/</a>)
+      is a speaking-practice web app. This policy explains what data it handles, where it is
+      stored, and the choices you have.
+    </p>
+
+    <h2>What we collect</h2>
+    <ul>
+      <li><b>Account data.</b> When you sign up with email, Google, or GitHub, we store your
+        email address and a username. Sign-in is handled by Supabase Auth; with Google or
+        GitHub sign-in we receive only your basic profile (name, email, avatar) from the
+        provider - never your password.</li>
+      <li><b>Practice data.</b> Speeches, scripts, scores, schedules and practice history you
+        save are stored in your account so they sync across devices.</li>
+      <li><b>Usage counters.</b> Anonymous per-account counters of AI requests and tokens, used
+        only to enforce the daily AI quota.</li>
+    </ul>
+
+    <h2>What we do not collect</h2>
+    <ul>
+      <li>No advertising trackers, no analytics beacons, no cookies for marketing.</li>
+      <li>Your speech audio is processed in your browser and is not uploaded.</li>
+      <li>We never sell or share your data with third parties for their own use.</li>
+    </ul>
+
+    <h2>How your data is stored</h2>
+    <p>
+      Account and practice data lives in a Supabase-hosted database (PostgreSQL) protected by
+      row-level security: each row is readable and writable only by its owner. Text you submit
+      for AI feedback is sent to the AI provider (DeepSeek) solely to generate that feedback.
+    </p>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li>You can sign out at any time; sessions are stored only in your browser's local storage.</li>
+      <li>You can delete individual saved works and history entries inside the app.</li>
+      <li>To delete your whole account and all associated data, contact us at the address below.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>
+      Questions or deletion requests: open an issue at
+      <a href="https://github.com/JunlinPeng/wetalk/issues">github.com/JunlinPeng/wetalk/issues</a>.
+    </p>
+  </main>
+</body>
+</html>
